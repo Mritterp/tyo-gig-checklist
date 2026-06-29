@@ -101,7 +101,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-drag-handle{position:absolute;bottom:6px;right:7px;font-size:11px;color:var(--border2);line-height:1;cursor:grab;}
 
 .extra-tasks-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
-.extra-task-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;}
+.extra-task-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;transition:background .1s,border-color .1s;}
+.extra-task-row.shared-on{background:var(--orange-dim);border-color:var(--orange-border);border-left:3px solid var(--orange);}
 .extra-task-text{font-size:14px;color:var(--text);flex:1;background:transparent;border:none;outline:none;font-family:'Inter',sans-serif;}
 .extra-task-text::placeholder{color:var(--text-faint);}
 .extra-task-remove{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;display:flex;align-items:center;}
@@ -557,10 +558,11 @@ function updateBuildBar(){
   const kits=[...selectedKitIds].reduce((a,id)=>a+(getTpl(id)?.categoryIds?.length||0),0);
   document.getElementById('buildSummary').textContent=`${n} pack${n>1?'s':''} · ${kits} kits`;
 }
-function renderExtraTasks(){document.getElementById('extraTasksList').innerHTML=extraTasks.map(t=>`<div class="extra-task-row" id="extrow_${t.id}"><input class="extra-task-text" placeholder="Task description…" value="${escHtml(t.text)}" oninput="updateExtraTask('${t.id}',this.value)"><button class="extra-task-remove" onclick="removeExtraTask('${t.id}')">${svgX()}</button></div>`).join('');}
-function addExtraTask(){const t={id:uid(),text:''};extraTasks.push(t);renderExtraTasks();document.querySelector(`#extrow_${t.id} input`)?.focus();}
+function renderExtraTasks(){document.getElementById('extraTasksList').innerHTML=extraTasks.map(t=>`<div class="extra-task-row ${t.shared?'shared-on':''}" id="extrow_${t.id}"><input class="extra-task-text" placeholder="Task description…" value="${escHtml(t.text)}" oninput="updateExtraTask('${t.id}',this.value)"><span class="kit-shared-label ${t.shared?'on':'off'}" style="font-size:8px;white-space:nowrap">IMPORTANT</span><button class="shared-toggle ${t.shared?'on':''}" onclick="toggleExtraTaskShared('${t.id}')"><span class="st-dot"></span></button><button class="extra-task-remove" onclick="removeExtraTask('${t.id}')">${svgX()}</button></div>`).join('');}
+function addExtraTask(){const t={id:uid(),text:'',shared:false};extraTasks.push(t);renderExtraTasks();document.querySelector(`#extrow_${t.id} input`)?.focus();}
 function updateExtraTask(id,val){const t=extraTasks.find(x=>x.id===id);if(t)t.text=val;}
 function removeExtraTask(id){extraTasks=extraTasks.filter(t=>t.id!==id);renderExtraTasks();}
+function toggleExtraTaskShared(id){const t=extraTasks.find(x=>x.id===id);if(t){t.shared=!t.shared;renderExtraTasks();}}
 
 function buildGig(){
   const name=document.getElementById('newGigName').value.trim()||'Untitled Gig';
@@ -578,7 +580,7 @@ function buildGig(){
     });
   });
   const extras=extraTasks.filter(t=>t.text.trim());
-  if(extras.length)packing.push({id:uid(),title:'One-Off Tasks',items:extras.map(t=>({id:uid(),text:t.text.trim(),checked:false,note:'',shared:false}))});
+  if(extras.length)packing.push({id:uid(),title:'One-Off Tasks',items:extras.map(t=>({id:uid(),text:t.text.trim(),checked:false,note:'',shared:!!t.shared}))});
   function buildRoutinePhase(packingCats,routineKey,phaseId,label){
     const cats=[];
     packingCats.forEach(pc=>{
@@ -667,12 +669,12 @@ function renderLibKit(cat){
         <span class="drag-handle">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
-        <span class="kit-shared-label ${item.shared?'on':'off'}">SHARED / DOUBLE CHECK</span>
+        <span class="kit-shared-label ${item.shared?'on':'off'}">IMPORTANT / DOUBLE CHECK</span>
         <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
         <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
       </div>`).join('')}
     </div>
-    <div class="lib-hint">Toggle Shared to flag an item for a double-check when packing.</div>
+    <div class="lib-hint">Toggle Important to flag an item for a double-check when packing.</div>
     <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>`
     :rtab==='setup'?`
     <div id="kitlist_${cat.id}">
@@ -916,6 +918,16 @@ function renderSettingsScreen(){
   </div>
   ${permWarning}
   <p class="settings-note">Reminders are scheduled based on the date you set when creating a gig. No date = no reminder.</p>
+</div>
+<div class="settings-section">
+  <div class="settings-section-label">Important / Double Check</div>
+  <div class="settings-card">
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-sub" style="color:var(--text-muted);line-height:1.6;">Mark any kit item or one-off task as <strong>Important</strong> to flag it for a double-check when packing. This is especially useful for gear shared between multiple kits — it reminds you to confirm the item actually made it into the right kit before you head out.</div>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="settings-section">
   <div class="settings-section-label">About</div>
