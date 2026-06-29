@@ -620,7 +620,6 @@ function renderLibKit(cat){
     <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
   ${open?`<div class="lib-item-body">
-    <input class="lib-name-input" value="${escHtml(cat.title)}" placeholder="Kit name…" onchange="renameCat('${cat.id}',this.value)">
     <div class="kit-routine-tabs">
       <span class="kit-rtab ${rtab==='packing'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','packing')">PACKING <span class="kit-rtab-count">${cat.items.length}</span></span>
       <span class="kit-rtab ${rtab==='setup'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','setup')">SETUP <span class="kit-rtab-count">${(cat.setup||[]).length}</span></span>
@@ -728,7 +727,16 @@ function beginRenameLibTpl(tplId){
 }
 function beginRenameLibKit(catId){
   if(openLibId!==catId){openLibId=catId;renderLibraryScreen();}
-  setTimeout(()=>{document.querySelector(`#libitem_${catId} .lib-name-input`)?.focus();},40);
+  setTimeout(()=>{
+    const hdr=document.querySelector(`#libitem_${catId} .lib-item-name`);if(!hdr)return;
+    const cat=getCat(catId);if(!cat)return;
+    const inp=document.createElement('input');
+    Object.assign(inp.style,{fontSize:'15px',fontWeight:'600',color:'var(--text)',background:'transparent',border:'none',borderBottom:'1.5px solid var(--blue)',outline:'none',fontFamily:'Inter,sans-serif',flex:'1'});
+    inp.value=cat.title;
+    const commit=()=>{if(inp.value.trim()){cat.title=inp.value.trim();saveState();}openLibId=catId;renderLibraryScreen();};
+    inp.onblur=commit;inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderLibraryScreen();};
+    inp.onclick=e=>e.stopPropagation();hdr.replaceWith(inp);inp.focus();inp.select();
+  },40);
 }
 
 // ═══ CHECKLIST ═══
