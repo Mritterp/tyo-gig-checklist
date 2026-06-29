@@ -100,6 +100,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-card.selected{border:1.5px solid var(--green-border);background:var(--green-dim);border-radius:12px;}
 .kit-card.dragging{opacity:0.35;border-style:dashed;}
 .kit-card.drag-over{border-color:var(--blue);background:var(--blue-dim,#E8F0FE);}
+.kit-item-row.drag-over,.step-row.drag-over{border-color:var(--blue);background:var(--blue-dim);}
 .kit-card-check{position:absolute;top:7px;right:7px;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;background:var(--surface);transition:all .15s;}
 .kit-card.selected .kit-card-check{background:var(--green);border-color:var(--green);}
 .kit-card-check svg{display:none;}
@@ -294,19 +295,37 @@ body.dark{
 }
 /* Text size overrides */
 body.text-large .item-text{font-size:16px;}
+body.text-large .item-text-input{font-size:16px;}
 body.text-large .category-title{font-size:17px;}
 body.text-large .kit-card-name{font-size:15px;}
+body.text-large .kit-card-sub{font-size:13px;}
 body.text-large .gig-card-name{font-size:19px;}
+body.text-large .gig-card-meta{font-size:14px;}
 body.text-large .up-next-name{font-size:21px;}
 body.text-large .lib-item-name{font-size:17px;}
 body.text-large .kit-item-input{font-size:16px;}
+body.text-large .step-input{font-size:16px;}
+body.text-large .extra-task-text{font-size:17px;}
+body.text-large .tpl-kit-name{font-size:16px;}
+body.text-large .cl-gig-name{font-size:24px;}
+body.text-large .settings-row-title{font-size:16px;}
+body.text-large .settings-row-sub{font-size:14px;}
 body.text-xlarge .item-text{font-size:19px;}
+body.text-xlarge .item-text-input{font-size:19px;}
 body.text-xlarge .category-title{font-size:20px;}
 body.text-xlarge .kit-card-name{font-size:17px;}
+body.text-xlarge .kit-card-sub{font-size:15px;}
 body.text-xlarge .gig-card-name{font-size:21px;}
+body.text-xlarge .gig-card-meta{font-size:16px;}
 body.text-xlarge .up-next-name{font-size:23px;}
 body.text-xlarge .lib-item-name{font-size:19px;}
 body.text-xlarge .kit-item-input{font-size:19px;}
+body.text-xlarge .step-input{font-size:19px;}
+body.text-xlarge .extra-task-text{font-size:20px;}
+body.text-xlarge .tpl-kit-name{font-size:19px;}
+body.text-xlarge .cl-gig-name{font-size:27px;}
+body.text-xlarge .settings-row-title{font-size:18px;}
+body.text-xlarge .settings-row-sub{font-size:16px;}
 /* Text size picker */
 .text-size-picker{display:flex;gap:8px;margin-top:2px;}
 .tsz-btn{flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text-muted);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
@@ -603,6 +622,67 @@ function _onTplMove(e){
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   _nearestCard(cx,cy,_tplDrag.id)?.classList.add('drag-over');
 }
+// List drag (vertical rows in library — kit items, setup/teardown steps)
+let _listDrag=null;
+function startListItemDrag(e,catId,routineKey,idx){
+  e.preventDefault();e.stopPropagation();
+  const row=e.target.closest('.kit-item-row,.step-row');if(!row)return;
+  const rect=row.getBoundingClientRect();
+  const ghost=row.cloneNode(true);ghost.removeAttribute('id');
+  ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2);border-radius:8px;`;
+  document.body.appendChild(ghost);
+  row.style.opacity='0.35';
+  _listDrag={catId,routineKey,idx,ghost,row,oy:e.clientY-rect.top,gh:rect.height,lastY:e.clientY};
+  document.addEventListener('pointermove',_onListMove,{passive:false});
+  document.addEventListener('pointerup',_onListUp);
+  document.addEventListener('pointercancel',_onListCancel);
+}
+function _nearestRow(y,excludeIdx){
+  let best=null,bestDist=Infinity;
+  document.querySelectorAll('#kitlist_'+_listDrag.catId+' .kit-item-row, #kitlist_'+_listDrag.catId+' .step-row').forEach((r,i)=>{
+    if(i===excludeIdx)return;
+    const rc=r.getBoundingClientRect();
+    const cy=rc.top+rc.height/2;
+    const dist=Math.abs(y-cy);
+    if(dist<bestDist){bestDist=dist;best={el:r,idx:i};}
+  });
+  return best;
+}
+function _onListMove(e){
+  if(!_listDrag)return;e.preventDefault();
+  _listDrag.lastY=e.clientY;
+  _listDrag.ghost.style.top=(e.clientY-_listDrag.oy)+'px';
+  const ghostCy=e.clientY-_listDrag.oy+_listDrag.gh/2;
+  document.querySelectorAll('#kitlist_'+_listDrag.catId+' .kit-item-row, #kitlist_'+_listDrag.catId+' .step-row').forEach(r=>r.classList.remove('drag-over'));
+  const nearest=_nearestRow(ghostCy,_listDrag.idx);
+  if(nearest)nearest.el.classList.add('drag-over');
+}
+function _onListCancel(){
+  if(!_listDrag)return;
+  _listDrag.ghost.remove();_listDrag.row.style.opacity='';
+  document.querySelectorAll('.kit-item-row,.step-row').forEach(r=>r.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onListMove);
+  document.removeEventListener('pointerup',_onListUp);
+  document.removeEventListener('pointercancel',_onListCancel);
+  _listDrag=null;
+}
+function _onListUp(e){
+  if(!_listDrag)return;
+  const{catId,routineKey,idx,ghost,row,lastY,oy,gh}=_listDrag;
+  const ghostCy=(e?.clientY??lastY)-oy+gh/2;
+  ghost.remove();row.style.opacity='';
+  document.querySelectorAll('.kit-item-row,.step-row').forEach(r=>r.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onListMove);
+  document.removeEventListener('pointerup',_onListUp);
+  document.removeEventListener('pointercancel',_onListCancel);
+  _listDrag=null;
+  const nearest=_nearestRow(ghostCy,idx);
+  if(!nearest||nearest.idx===idx)return;
+  const cat=getCat(catId);if(!cat)return;
+  const arr=routineKey?cat[routineKey]:cat.items;
+  const item=arr.splice(idx,1)[0];arr.splice(nearest.idx,0,item);
+  saveState();openLibId=catId;kitRoutineTab[catId]=routineKey||'packing';renderLibraryScreen();
+}
 function _onTplCancel(){
   if(!_tplDrag)return;
   if(_tplDrag.ghost){_tplDrag.ghost.remove();_tplDrag.card.style.opacity='';}
@@ -754,7 +834,7 @@ function renderLibKit(cat){
     <div class="kit-items-list" id="kitlist_${cat.id}">
       ${cat.items.map((item,ii)=>`
       <div class="kit-item-row ${item.shared?'shared-on':''}">
-        <span class="drag-handle">⋮⋮</span>
+        <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
         <span class="kit-shared-label ${item.shared?'on':'off'}" style="${item.shared?'':'visibility:hidden'}">IMPORTANT</span>
@@ -766,13 +846,13 @@ function renderLibKit(cat){
     <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>`
     :rtab==='setup'?`
     <div id="kitlist_${cat.id}">
-      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps that run at location when this kit is deployed. Appears in the gig's Setup tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>`
     :`
     <div id="kitlist_${cat.id}">
-      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps for striking this kit. Appears in the gig's Teardown tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>`}
