@@ -283,6 +283,42 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   .app-header,.dash-main,.form-main,.cl-main,.lib-main{padding-left:16px;padding-right:16px;}
   .cl-header{padding-left:16px;padding-right:16px;}
 }
+/* ===== DESKTOP (≥1100px) ===== */
+@media(min-width:1100px){
+  #sidebar{display:flex;}
+  #globalTabBar{display:none;}
+  .app-header{display:none;}
+  .cl-back-row{display:none;}
+  .screen{margin-left:208px;min-height:100vh;}
+  .dash-main{padding:28px 36px 40px;}
+  .lib-main{padding:28px 36px 40px;}
+  .settings-main{padding:28px 36px 40px;}
+  .cl-header{padding:20px 36px 0;}
+  .cl-main{padding:16px 36px 40px;}
+  #gigList{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .up-next-card{display:flex;align-items:center;gap:28px;}
+  .up-next-meta{flex:1;}
+  .up-next-pct{flex-shrink:0;}
+  .phase-tabs{display:none;}
+  #clMain.dt-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;}
+  .dt-phase-col{border-right:1px solid var(--border);padding:16px 20px 32px;}
+  .dt-phase-col:last-child{border-right:none;}
+  .dt-phase-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--green-border);display:flex;justify-content:space-between;align-items:center;}
+  .dt-phase-label .phase-stats{font-size:11px;font-weight:500;letter-spacing:0;color:var(--text-muted);}
+  .dt-phase-actions{display:flex;gap:6px;margin-bottom:10px;}
+  .lib-routines-dt{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+  .lib-routine-col{border-right:1px solid var(--border);padding:14px 16px;}
+  .lib-routine-col:last-child{border-right:none;}
+  .lib-routine-col-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--green-border);}
+  .kit-routine-tabs{display:none;}
+}
+/* Sidebar styles (hidden on mobile via display:none on #sidebar) */
+#sidebar{display:none;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:208px;background:var(--surface);border-right:1px solid var(--border);z-index:100;padding:20px 0;}
+.sb-brand{font-family:Georgia,'Times New Roman',serif;font-size:20px;color:var(--text);padding:0 22px 24px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+.sb-item{padding:12px 22px;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--text-faint);cursor:pointer;border-left:3px solid transparent;transition:color .15s,background .15s;user-select:none;}
+.sb-item:hover{color:var(--text);}
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--blue-dim);}
+.sb-new-gig{margin:auto 18px 0;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;font-family:'Inter',sans-serif;}
 /* Dark mode */
 body.dark{
   --bg:#1C1C1E;--surface:#2C2C2E;--surface2:#3A3A3C;--surface3:#48484A;
@@ -346,6 +382,15 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <body>
 <div class="complete-flash" id="completeFlash"></div>
 <div class="toast" id="toast"></div>
+
+<!-- DESKTOP SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-brand">Gig Checklist</div>
+  <div class="sb-item" id="stab-gigs" onclick="goTab('gigs')">GIGS</div>
+  <div class="sb-item" id="stab-library" onclick="goTab('library')">LIBRARY</div>
+  <div class="sb-item" id="stab-settings" onclick="goTab('settings')">SETTINGS</div>
+  <button class="sb-new-gig" onclick="goNewGig()">+ NEW GIG</button>
+</div>
 
 <!-- GLOBAL TAB BAR (fixed, always visible) -->
 <div class="global-tab-bar" id="globalTabBar">
@@ -417,7 +462,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <!-- CHECKLIST -->
 <div class="screen" id="screenChecklist">
   <div class="cl-header">
-    <div class="cl-top-row">
+    <div class="cl-top-row cl-back-row">
       <button class="cl-back" onclick="goBack('screenDash')">← All gigs</button>
       <span class="cl-date" id="clGigDate"></span>
     </div>
@@ -514,7 +559,13 @@ function getCat(id){return appState.categories.find(c=>c.id===id);}
 function getTpl(id){return appState.templates.find(t=>t.id===id);}
 
 // ═══ NAVIGATION ═══
-function setActiveTab(name){document.querySelectorAll('.gtbi').forEach(t=>t.classList.remove('active'));const el=document.getElementById('gtab-'+name);if(el)el.classList.add('active');}
+function isWide(){return window.innerWidth>=1100;}
+function setActiveTab(name){
+  document.querySelectorAll('.gtbi').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById('gtab-'+name);if(el)el.classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(t=>t.classList.remove('active'));
+  const sel=document.getElementById('stab-'+name);if(sel)sel.classList.add('active');
+}
 function goTab(name){if(name==='gigs'){showScreen('screenDash');setActiveTab('gigs');renderDashboard();}else if(name==='library'){goLibrary('templates');}else if(name==='settings'){goSettings();}}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);el.classList.add('active');el.querySelector('.dash-main,.form-main,.lib-main,.cl-main,.settings-main')?.scrollTo(0,0);}
 function goBack(target){if(editingItem)commitEditItem();showScreen(target);if(target==='screenDash'){setActiveTab('gigs');renderDashboard();}}
@@ -889,7 +940,36 @@ function renderLibKit(cat){
       <span class="kit-rtab ${rtab==='setup'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','setup')">SETUP <span class="kit-rtab-count">${(cat.setup||[]).length}</span></span>
       <span class="kit-rtab ${rtab==='teardown'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','teardown')">TEARDOWN <span class="kit-rtab-count">${(cat.teardown||[]).length}</span></span>
     </div>
-    ${rtab==='packing'?`
+    ${isWide()?`<div class="lib-routines-dt">
+      <div class="lib-routine-col">
+        <div class="lib-routine-col-label">PACKING <span style="color:var(--text-muted);font-weight:400">${cat.items.length}</span></div>
+        <div class="kit-items-list" id="kitlist_${cat.id}">
+          ${cat.items.map((item,ii)=>`<div class="kit-item-row ${item.shared?'shared-on':''}">
+            <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
+            ${item.shared?`<span class="kit-item-bang">!</span>`:''}
+            <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
+            <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
+            <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
+          </div>`).join('')}
+        </div>
+        <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>
+      </div>
+      <div class="lib-routine-col">
+        <div class="lib-routine-col-label">SETUP <span style="color:var(--text-muted);font-weight:400">${(cat.setup||[]).length}</span></div>
+        <div id="kitlist_setup_${cat.id}">
+          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+        </div>
+        <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>
+      </div>
+      <div class="lib-routine-col">
+        <div class="lib-routine-col-label">TEARDOWN <span style="color:var(--text-muted);font-weight:400">${(cat.teardown||[]).length}</span></div>
+        <div id="kitlist_teardown_${cat.id}">
+          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+        </div>
+        <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>
+      </div>
+    </div>`
+    :rtab==='packing'?`
     <div class="kit-items-list" id="kitlist_${cat.id}">
       ${cat.items.map((item,ii)=>`
       <div class="kit-item-row ${item.shared?'shared-on':''}">
@@ -1072,15 +1152,34 @@ function updateClProgress(){
 }
 function renderPhaseContent(){
   const gig=getActiveGig();if(!gig)return;
+  updateClProgress();
+  if(isWide()){
+    const clMain=document.getElementById('clMain');
+    clMain.className='cl-main dt-phases';
+    let html='';
+    gig.phases.forEach((phase,pi)=>{
+      const{done,total}=phaseProgress(phase);
+      const pct=total?Math.round(done/total*100):0;
+      html+=`<div class="dt-phase-col">
+        <div class="dt-phase-label">${phase.label.toUpperCase()}<span class="phase-stats ${pct===100?'complete':''}">${done}/${total}</span></div>
+        <div class="dt-phase-actions"><button class="sm-btn" onclick="resetPhase(${pi})">Reset</button><button class="sm-btn green" onclick="checkAllPhase(${pi})">Check All</button></div>`;
+      if(pi===2)html+=`<div class="teardown-lead">Everything that went out comes back.</div>`;
+      phase.categories.forEach(cat=>{html+=renderCategory(cat,pi);});
+      html+=`</div>`;
+    });
+    clMain.innerHTML=html;
+    return;
+  }
+  const clMain=document.getElementById('clMain');
+  clMain.className='cl-main';
   const phase=gig.phases[activePhaseIdx];
   const{done,total}=phaseProgress(phase);const pct=total?Math.round(done/total*100):0;
-  updateClProgress();
   let html=`<div class="phase-header"><div class="phase-stats ${pct===100?'complete':''}"><em>${done}</em> / ${total} items</div><div class="phase-actions"><button class="sm-btn" onclick="resetPhase()">Reset</button><button class="sm-btn green" onclick="checkAllPhase()">Check All</button></div></div>`;
   if(activePhaseIdx===2)html+=`<div class="teardown-lead">Everything that went out comes back. Confirm each kit before you leave.</div>`;
   phase.categories.forEach(cat=>{html+=renderCategory(cat,activePhaseIdx);});
   html+=`<button class="add-cat-btn" onclick="addCategory()">${svgPlus(10)} Add Kit</button>`;
   if(activePhaseIdx===0)html+=`<div class="cl-hint">Tap row to expand · tap ○ to pack whole kit · long-press item to edit</div>`;
-  document.getElementById('clMain').innerHTML=html;
+  clMain.innerHTML=html;
 }
 function phaseProgress(phase){let done=0,total=0;phase.categories.forEach(c=>c.items.forEach(i=>{total++;if(i.checked)done++;}));return{done,total};}
 function findItem(itemId){const gig=getActiveGig();for(const p of gig.phases)for(const c of p.categories){const i=c.items.find(x=>x.id===itemId);if(i)return{item:i,cat:c};}return null;}
@@ -1100,8 +1199,8 @@ function startEditCat(catId){const cat=findCat(catId);if(!cat)return;const span=
 function addItem(catId){if(editingItem)commitEditItem();const cat=findCat(catId);if(!cat)return;const ni={id:uid(),text:'New item',checked:false,note:'',shared:false};cat.items.push(ni);saveState();renderPhaseContent();setTimeout(()=>startEditItem(ni.id),40);}
 function deleteItem(id){const f=findItem(id);if(!f)return;f.cat.items=f.cat.items.filter(i=>i.id!==id);saveState();renderPhaseContent();}
 function addCategory(){const gig=getActiveGig();const phase=gig.phases[activePhaseIdx];const nc={id:uid(),title:'New Kit',items:[{id:uid(),text:'First item',checked:false,note:'',shared:false}],expanded:true};phase.categories.push(nc);saveState();renderPhaseContent();setTimeout(()=>startEditCat(nc.id),40);}
-function resetPhase(){if(!confirm('Uncheck all items in this phase?'))return;const gig=getActiveGig();gig.phases[activePhaseIdx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();}
-function checkAllPhase(){const gig=getActiveGig();gig.phases[activePhaseIdx].categories.forEach(c=>c.items.forEach(i=>i.checked=true));saveState();renderPhaseContent();}
+function resetPhase(pi){if(!confirm('Uncheck all items in this phase?'))return;const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();}
+function checkAllPhase(pi){const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=true));saveState();renderPhaseContent();}
 
 document.getElementById('clGigName').addEventListener('click',()=>{const gig=getActiveGig();if(!gig)return;const inp=document.getElementById('clGigNameInput'),disp=document.getElementById('clGigName');inp.value=gig.name;disp.style.display='none';inp.style.display='';inp.focus();inp.select();});
 function commitGigName(){const gig=getActiveGig();const inp=document.getElementById('clGigNameInput'),disp=document.getElementById('clGigName');if(inp.value.trim()){gig.name=inp.value.trim();saveState();}disp.textContent=gig.name;inp.style.display='none';disp.style.display='';}
@@ -1309,6 +1408,22 @@ loadState();
 applyTextSize();
 applyDarkMode();
 renderDashboard();
+setActiveTab('gigs');
+
+// Re-render on breakpoint cross so layout switches correctly
+let _lastWide=isWide();
+window.addEventListener('resize',()=>{
+  const w=isWide();
+  if(w===_lastWide)return;
+  _lastWide=w;
+  const active=document.querySelector('.screen.active');
+  if(!active)return;
+  const id=active.id;
+  if(id==='screenDash')renderDashboard();
+  else if(id==='screenChecklist')renderPhaseContent();
+  else if(id==='screenLibrary')renderLibraryScreen();
+  else if(id==='screenSettings')renderSettingsScreen();
+});
 
 // ═══ PWA ═══
 // Generate apple-touch-icon at runtime (iOS needs PNG, not SVG)
