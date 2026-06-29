@@ -149,6 +149,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .shared-toggle .st-dot{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .2s;}
 .shared-toggle.on .st-dot{transform:translateX(13px);}
 
+.kit-routine-tabs{display:flex;gap:14px;padding:0 0 8px;border-bottom:1px solid var(--green-border);margin:0 0 10px;font-size:10px;font-weight:600;letter-spacing:1px;}
+.kit-rtab{color:var(--text-faint);cursor:pointer;padding-bottom:6px;border-bottom:2px solid transparent;margin-bottom:-9px;user-select:none;}
+.kit-rtab.active{color:var(--text);border-bottom-color:var(--green);}
+.kit-rtab-count{color:var(--text-faint);font-weight:400;}
+.kit-rtab.active .kit-rtab-count{color:var(--text-muted);}
+.step-row{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.step-input{flex:1;font-size:13px;color:var(--text-dim);background:transparent;border:none;border-bottom:1px solid transparent;outline:none;padding:2px 0;font-family:'Inter',sans-serif;}
+.step-input:focus{border-color:var(--border2);}
 .lib-hint{font-size:10px;color:var(--text-faint);line-height:1.4;padding:2px 0 8px;}
 .lib-name-input{font-size:15px;font-weight:600;color:var(--text);width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--blue);outline:none;font-family:'Inter',sans-serif;margin-bottom:10px;display:block;}
 .lib-footer{display:flex;gap:8px;padding:6px 0 12px;}
@@ -313,7 +321,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   </div>
   <div class="build-bar">
     <div class="build-summary" id="buildSummary">No templates selected</div>
-    <button class="build-btn" id="buildBtn" disabled onclick="buildGig()">Build &amp; Pack →</button>
+    <button class="build-btn" id="buildBtn" disabled onclick="buildGig()">Build Pack →</button>
   </div>
 </div>
 
@@ -403,7 +411,7 @@ const TEARDOWN_PHASE={categories:[
 let appState={gigs:[],templates:null,categories:null};
 let activeGigId=null,activePhaseIdx=0,editingItem=null;
 let selectedKitIds=new Set(),extraTasks=[];
-let openLibId=null,libraryTab='templates';
+let openLibId=null,libraryTab='templates',kitRoutineTab={};
 let _lpTimer=null,_lpSuppressClick=false;
 
 function migrateItems(items){
@@ -414,7 +422,11 @@ function loadState(){
   if(!appState.categories)appState.categories=JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
   if(!appState.templates)appState.templates=JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
   if(!appState.gigs)appState.gigs=[];
-  appState.categories.forEach(cat=>{cat.items=migrateItems(cat.items);});
+  appState.categories.forEach(cat=>{
+    cat.items=migrateItems(cat.items||[]);
+    if(!cat.setup)cat.setup=[];
+    if(!cat.teardown)cat.teardown=[];
+  });
   saveState();
 }
 function saveState(){try{localStorage.setItem('tyo_v5',JSON.stringify(appState));}catch(e){}}
@@ -532,11 +544,22 @@ function buildGig(){
   });
   const extras=extraTasks.filter(t=>t.text.trim());
   if(extras.length)packing.push({id:uid(),title:'One-Off Tasks',items:extras.map(t=>({id:uid(),text:t.text.trim(),checked:false,note:'',shared:false}))});
-  function bakePhase(tmpl,id,label){return{id,label,categories:tmpl.categories.map(cat=>({id:uid(),title:cat.title,items:cat.items.map(text=>({id:uid(),text,checked:false,note:'',shared:false}))}))};}
+  function buildRoutinePhase(packingCats,routineKey,phaseId,label){
+    const cats=[];
+    packingCats.forEach(pc=>{
+      if(!pc.globalCatId)return;
+      const libCat=getCat(pc.globalCatId);
+      const steps=(libCat&&libCat[routineKey])||[];
+      if(!steps.length)return;
+      cats.push({id:uid(),title:pc.title,globalCatId:pc.globalCatId,
+        items:steps.map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}))});
+    });
+    return{id:phaseId,label,categories:cats};
+  }
   const gig={id:uid(),name,date,callTime,kitIds:[...selectedKitIds],phases:[
     {id:'packing',label:'Packing',categories:packing},
-    bakePhase(SETUP_PHASE,'setup','Setup'),
-    bakePhase(TEARDOWN_PHASE,'teardown','Teardown'),
+    buildRoutinePhase(packing,'setup','setup','Setup'),
+    buildRoutinePhase(packing,'teardown','teardown','Teardown'),
   ]};
   appState.gigs.unshift(gig);saveState();
   activeGigId=gig.id;activePhaseIdx=0;renderChecklistScreen();showScreen('screenChecklist');
@@ -589,14 +612,21 @@ function renderTplRows(tpl){
 
 function renderLibKit(cat){
   const open=openLibId===cat.id;
-  const usedBy=appState.templates.filter(t=>(t.categoryIds||[]).includes(cat.id)).length;
+  const rtab=kitRoutineTab[cat.id]||'packing';
+  const totalItems=`${cat.items.length} items`;
   return`<div class="lib-item ${open?'open':''}" id="libitem_${cat.id}">
   <div class="lib-item-hdr" onclick="toggleLibItem('${cat.id}')" onpointerdown="startLPKit(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
     <span class="lib-item-name">${escHtml(cat.title)}</span>
-    <span class="lib-item-right">${open?'long-press to rename':`${cat.items.length} items  ›`}</span>
+    <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
   ${open?`<div class="lib-item-body">
     <input class="lib-name-input" value="${escHtml(cat.title)}" placeholder="Kit name…" onchange="renameCat('${cat.id}',this.value)">
+    <div class="kit-routine-tabs">
+      <span class="kit-rtab ${rtab==='packing'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','packing')">PACKING <span class="kit-rtab-count">${cat.items.length}</span></span>
+      <span class="kit-rtab ${rtab==='setup'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','setup')">SETUP <span class="kit-rtab-count">${(cat.setup||[]).length}</span></span>
+      <span class="kit-rtab ${rtab==='teardown'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','teardown')">TEARDOWN <span class="kit-rtab-count">${(cat.teardown||[]).length}</span></span>
+    </div>
+    ${rtab==='packing'?`
     <div class="kit-items-list" id="kitlist_${cat.id}">
       ${cat.items.map((item,ii)=>`
       <div class="kit-item-row ${item.shared?'shared-on':''}">
@@ -609,7 +639,19 @@ function renderLibKit(cat){
       </div>`).join('')}
     </div>
     <div class="lib-hint">Toggle Shared to flag an item for a double-check when packing.</div>
-    <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>
+    <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>`
+    :rtab==='setup'?`
+    <div id="kitlist_${cat.id}">
+      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+    </div>
+    <div class="lib-hint">Steps that run at location when this kit is deployed. Appears in the gig's Setup tab.</div>
+    <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>`
+    :`
+    <div id="kitlist_${cat.id}">
+      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+    </div>
+    <div class="lib-hint">Steps for striking this kit. Appears in the gig's Teardown tab.</div>
+    <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>`}
     <div class="lib-footer">
       <button class="lib-save" onclick="saveCatAndPropagate('${cat.id}')">SAVE</button>
       <button class="lib-delete" onclick="deleteCatLib('${cat.id}')">DELETE</button>
@@ -618,7 +660,26 @@ function renderLibKit(cat){
 </div>`;
 }
 
-function toggleLibItem(id){openLibId=openLibId===id?null:id;renderLibraryScreen();}
+function toggleLibItem(id){openLibId=openLibId===id?null:id;if(openLibId&&!kitRoutineTab[id])kitRoutineTab[id]='packing';renderLibraryScreen();}
+function switchKitRTab(catId,tab){kitRoutineTab[catId]=tab;openLibId=catId;renderLibraryScreen();}
+function addRoutineStep(catId,routineKey){
+  const cat=getCat(catId);if(!cat)return;
+  if(!cat[routineKey])cat[routineKey]=[];
+  cat[routineKey].push({text:'New step'});
+  saveState();openLibId=catId;kitRoutineTab[catId]=routineKey;renderLibraryScreen();
+  setTimeout(()=>{const listEl=document.getElementById('kitlist_'+catId);if(!listEl)return;const inputs=listEl.querySelectorAll('.step-input');const last=inputs[inputs.length-1];last?.focus();last?.select();},40);
+}
+function deleteRoutineStep(catId,routineKey,idx){
+  const cat=getCat(catId);if(!cat||!cat[routineKey])return;
+  cat[routineKey].splice(idx,1);saveState();openLibId=catId;kitRoutineTab[catId]=routineKey;renderLibraryScreen();
+}
+function updateRoutineStep(catId,routineKey,idx,val){
+  const cat=getCat(catId);if(!cat||!cat[routineKey])return;
+  const s=cat[routineKey][idx];
+  if(typeof s==='string')cat[routineKey][idx]={text:val};
+  else s.text=val;
+  saveState();
+}
 
 // template ops
 function addCatToTpl(tplId){const sel=document.getElementById('tplsel_'+tplId);if(!sel||!sel.value)return;const tpl=getTpl(tplId);if(!tpl)return;if(!(tpl.categoryIds||[]).includes(sel.value)){(tpl.categoryIds=tpl.categoryIds||[]).push(sel.value);}saveState();openLibId=tplId;renderLibraryScreen();}
