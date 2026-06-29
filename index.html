@@ -457,7 +457,7 @@ function getTpl(id){return appState.templates.find(t=>t.id===id);}
 // ═══ NAVIGATION ═══
 function setActiveTab(name){document.querySelectorAll('.gtbi').forEach(t=>t.classList.remove('active'));const el=document.getElementById('gtab-'+name);if(el)el.classList.add('active');}
 function goTab(name){if(name==='gigs'){showScreen('screenDash');setActiveTab('gigs');renderDashboard();}else if(name==='library'){goLibrary('templates');}else if(name==='settings'){goSettings();}}
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);el.classList.add('active');el.querySelector('.dash-main,.form-main,.lib-main,.cl-main,.settings-main')?.scrollTo(0,0);}
 function goBack(target){if(editingItem)commitEditItem();showScreen(target);if(target==='screenDash'){setActiveTab('gigs');renderDashboard();}}
 function goNewGig(){selectedKitIds.clear();extraTasks=[];document.getElementById('newGigName').value='';document.getElementById('newGigDate').value=new Date().toISOString().slice(0,10);renderKitGrid();renderExtraTasks();updateBuildBar();showScreen('screenNewGig');setActiveTab('gigs');setTimeout(()=>document.getElementById('newGigName').focus(),100);}
 function goLibrary(tab){libraryTab=tab||'templates';openLibId=null;renderLibraryScreen();showScreen('screenLibrary');setActiveTab('library');}
