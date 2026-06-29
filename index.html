@@ -140,7 +140,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-item-bang{width:14px;height:14px;border-radius:50%;background:var(--orange);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .kit-item-input{flex:1;font-size:13px;color:var(--text-dim);background:transparent;border:none;border-bottom:1px solid transparent;outline:none;padding:2px 0;font-family:'Inter',sans-serif;}
 .kit-item-input:focus{border-color:var(--border2);}
-.kit-shared-label{font-size:9px;font-weight:600;letter-spacing:.5px;flex-shrink:0;min-width:36px;text-align:right;}
+.kit-shared-label{font-size:9px;font-weight:600;letter-spacing:.5px;flex-shrink:0;text-align:right;}
 .kit-shared-label.on{color:var(--orange);}
 .kit-shared-label.off{color:var(--text-faint);}
 
@@ -231,6 +231,22 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .cl-hint{text-align:center;font-size:11px;color:var(--text-faint);line-height:1.5;margin-top:10px;padding:0 16px;}
 .teardown-lead{font-size:12px;color:var(--text-muted);line-height:1.5;padding:0 2px 10px;}
 
+/* SETTINGS */
+.settings-main{flex:1;padding:18px;overflow-y:auto;}
+.settings-section{margin-bottom:28px;}
+.settings-section-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px;}
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-left{display:flex;flex-direction:column;gap:3px;}
+.settings-row-title{font-size:14px;font-weight:600;color:var(--text);}
+.settings-row-sub{font-size:12px;color:var(--text-muted);line-height:1.4;}
+.settings-toggle{width:44px;height:26px;border-radius:13px;background:var(--border2);border:none;cursor:pointer;position:relative;padding:0;flex-shrink:0;transition:background .25s;}
+.settings-toggle.on{background:var(--green);}
+.settings-toggle .st-dot{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .25s;}
+.settings-toggle.on .st-dot{transform:translateX(18px);}
+.settings-note{font-size:11px;color:var(--text-faint);line-height:1.5;margin-top:8px;padding:0 2px;}
+
 /* UTILS */
 .complete-flash{position:fixed;inset:0;pointer-events:none;z-index:999;opacity:0;background:radial-gradient(ellipse at center,rgba(52,199,89,.08) 0%,transparent 70%);transition:opacity .3s;}
 .complete-flash.show{opacity:1;}
@@ -257,7 +273,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   <div class="tab-bar">
     <div class="tbi active">GIGS</div>
     <div class="tbi" onclick="goLibrary('templates')">LIBRARY</div>
-    <div class="tbi" onclick="showToast('Settings coming soon')">SETTINGS</div>
+    <div class="tbi" onclick="goSettings()">SETTINGS</div>
   </div>
 </div>
 
@@ -306,9 +322,19 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   <div class="app-header">
     <button class="back-btn" onclick="goBack('screenDash')">← Dashboard</button>
     <div class="brand" style="font-size:18px">Library</div>
-    <div style="font-size:12px;font-weight:600;letter-spacing:1px;color:var(--text-dim)">EDIT</div>
+    <div style="width:40px"></div>
   </div>
   <div class="lib-main" id="libMain"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="screenSettings">
+  <div class="app-header">
+    <button class="back-btn" onclick="goBack('screenDash')">← Dashboard</button>
+    <div class="brand" style="font-size:18px">Settings</div>
+    <div style="width:80px"></div>
+  </div>
+  <div class="settings-main" id="settingsMain"></div>
 </div>
 
 <!-- CHECKLIST -->
@@ -577,7 +603,7 @@ function renderLibKit(cat){
         <span class="drag-handle">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" placeholder="Item…">
-        <span class="kit-shared-label ${item.shared?'on':'off'}">SHARED</span>
+        <span class="kit-shared-label ${item.shared?'on':'off'}">SHARED / DOUBLE CHECK</span>
         <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
         <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
       </div>`).join('')}
@@ -696,7 +722,6 @@ function renderItem(item,showShared){
   <div class="item-text">${escHtml(item.text)}</div>
   ${isShared?`<span class="shared-bang">!</span><span class="shared-label">double-check</span>`:''}
   <div class="item-actions">
-    ${showShared?`<button class="item-stoggle ${isShared?'on':''}" onclick="event.stopPropagation();toggleShared('${item.id}')"><span class="st-dot"></span></button>`:''}
     <button class="icon-btn danger" onclick="event.stopPropagation();deleteItem('${item.id}')">${svgX()}</button>
   </div>
 </div>`;
@@ -750,6 +775,64 @@ document.getElementById('clGigName').addEventListener('click',()=>{const gig=get
 function commitGigName(){const gig=getActiveGig();const inp=document.getElementById('clGigNameInput'),disp=document.getElementById('clGigName');if(inp.value.trim()){gig.name=inp.value.trim();saveState();}disp.textContent=gig.name;inp.style.display='none';disp.style.display='';}
 document.getElementById('clGigNameInput').addEventListener('blur',commitGigName);
 document.getElementById('clGigNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')commitGigName();});
+
+// ═══ SETTINGS ═══
+function goSettings(){renderSettingsScreen();showScreen('screenSettings');}
+function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,nightBeforeAlert:true,morningOfAlert:true});}
+function saveSettings(){saveState();}
+function renderSettingsScreen(){
+  const s=getSettings();
+  const notifSupported='Notification' in window;
+  const notifStatus=notifSupported?Notification.permission:'unavailable';
+  const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked in your browser. Enable them in your browser settings to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
+  document.getElementById('settingsMain').innerHTML=`
+<div class="settings-section">
+  <div class="settings-section-label">Reminders &amp; Alerts</div>
+  <div class="settings-card">
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-title">All Reminders</div>
+        <div class="settings-row-sub">Master switch — turns off all gig alerts</div>
+      </div>
+      <button class="settings-toggle ${s.remindersEnabled?'on':''}" id="stogAll" onclick="toggleSetting('remindersEnabled')"><span class="st-dot"></span></button>
+    </div>
+    <div class="settings-row" style="${s.remindersEnabled?'':'opacity:.4;pointer-events:none'}">
+      <div class="settings-row-left">
+        <div class="settings-row-title">Night Before</div>
+        <div class="settings-row-sub">Reminder the evening before your call time to finish packing</div>
+      </div>
+      <button class="settings-toggle ${s.nightBeforeAlert?'on':''}" onclick="toggleSetting('nightBeforeAlert')"><span class="st-dot"></span></button>
+    </div>
+    <div class="settings-row" style="${s.remindersEnabled?'':'opacity:.4;pointer-events:none'}">
+      <div class="settings-row-left">
+        <div class="settings-row-title">Morning Of</div>
+        <div class="settings-row-sub">Alert on the day of your gig when you open the app</div>
+      </div>
+      <button class="settings-toggle ${s.morningOfAlert?'on':''}" onclick="toggleSetting('morningOfAlert')"><span class="st-dot"></span></button>
+    </div>
+  </div>
+  ${permWarning}
+  <p class="settings-note">Reminders fire based on the call time you set when creating a gig. No call time = no reminder.</p>
+</div>
+<div class="settings-section">
+  <div class="settings-section-label">About</div>
+  <div class="settings-card">
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-title">TYO Sound Checklist</div>
+        <div class="settings-row-sub">Version 2.0 · Data stored locally on this device</div>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+function toggleSetting(key){
+  const s=getSettings();
+  if(key==='remindersEnabled'&&!s.remindersEnabled&&'Notification' in window&&Notification.permission==='default'){
+    Notification.requestPermission().then(()=>{s[key]=!s[key];saveSettings();renderSettingsScreen();});return;
+  }
+  s[key]=!s[key];saveSettings();renderSettingsScreen();
+}
 
 // ═══ INIT ═══
 loadState();
