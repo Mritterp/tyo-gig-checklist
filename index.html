@@ -574,18 +574,26 @@ function _onTplMove(e){
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   if(overId&&overId!==_tplDrag.id){overCard.classList.add('drag-over');_tplDrag.overId=overId;}else{_tplDrag.overId=null;}
 }
-function _onTplUp(){
+function _onTplUp(e){
   if(!_tplDrag)return;
-  const{id,ghost,card,overId}=_tplDrag;
+  const{id,ghost,card}=_tplDrag;
+  // Hide ghost so elementFromPoint sees the card underneath
+  ghost.style.display='none';
+  let dropId=null;
+  if(e&&e.clientX!=null){
+    const el=document.elementFromPoint(e.clientX,e.clientY);
+    dropId=el?.closest('.kit-card')?.id?.replace('kitcard_','');
+  }
+  if(!dropId)dropId=_tplDrag.overId;
   ghost.remove();card.classList.remove('dragging');
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   document.removeEventListener('pointermove',_onTplMove);
   document.removeEventListener('pointerup',_onTplUp);
   document.removeEventListener('pointercancel',_onTplUp);
   _tplDrag=null;
-  if(overId){
+  if(dropId&&dropId!==id){
     const order=appState.templateOrder||appState.templates.map(t=>t.id);
-    const fi=order.indexOf(id),ti=order.indexOf(overId);
+    const fi=order.indexOf(id),ti=order.indexOf(dropId);
     if(fi!==-1&&ti!==-1){order.splice(fi,1);order.splice(ti,0,id);appState.templateOrder=order;saveState();renderKitGrid();}
   }
 }
