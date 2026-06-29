@@ -556,6 +556,7 @@ function startTplDrag(e,id){
   document.body.appendChild(ghost);
   card.classList.add('dragging');
   _tplDrag={id,ghost,card,ox:e.clientX-rect.left,oy:e.clientY-rect.top,overId:null,moved:false};
+  try{e.target.setPointerCapture(e.pointerId);}catch(_){}
   document.addEventListener('pointermove',_onTplMove,{passive:false});
   document.addEventListener('pointerup',_onTplUp);
   document.addEventListener('pointercancel',_onTplUp);
