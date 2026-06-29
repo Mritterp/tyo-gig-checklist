@@ -70,8 +70,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .gig-card-bar-fill{height:100%;background:var(--text-faint);border-radius:4px;}
 .gig-card-bar-fill.done{background:var(--green);}
 .gig-card-count{font-size:12px;color:var(--text-muted);flex-shrink:0;}
-.packed-pill{font-size:11px;letter-spacing:1px;color:var(--green);border:1px solid var(--green-border);padding:3px 8px;flex-shrink:0;}
-.gig-card-del{position:absolute;top:10px;right:38px;background:none;border:none;cursor:pointer;color:var(--text-faint);padding:4px;opacity:0;transition:opacity .15s;}
+.gig-phase-dots{display:flex;gap:3px;align-items:center;flex-shrink:0;}
+.gig-phase-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);color:var(--text-faint);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
+.gig-phase-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
+.gig-card-del{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text-faint);padding:4px;opacity:0;transition:opacity .15s;}
 .gig-card:hover .gig-card-del{opacity:1;}
 .gig-card-del:hover{color:var(--danger);}
 
@@ -634,11 +636,13 @@ function renderDashboard(){
       const ds=g.date?new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
       const tn=(g.kitIds||[]).map(id=>getTpl(id)?.name).filter(Boolean).join(' + ');
       const meta=[ds,tn].filter(Boolean).join(' · ');
+      const pd=phasesDone(g);
+      const labels=['P','S','T'];
+      const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>`<div class="gig-phase-dot${pd[i]?' done':''}">${l}</div>`).join('')}</div>`;
       html+=`<div class="gig-card" onclick="openGig('${g.id}')">
   <button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${g.id}')">${svgX(11)}</button>
   <div class="gig-card-row1">
-    <div class="gig-card-name">${escHtml(g.name)}</div>
-    ${allDone?`<span class="packed-pill">✓ PACKED</span>`:`<span class="gig-card-chevron">›</span>`}
+    <div style="display:flex;align-items:center;gap:8px;min-width:0">${phaseDots}<div class="gig-card-name">${escHtml(g.name)}</div></div>
   </div>
   ${meta?`<div class="gig-card-meta">${escHtml(meta)}</div>`:''}
   ${!allDone?`<div class="gig-card-progress-row"><div class="gig-card-bar"><div class="gig-card-bar-fill${allDone?' done':''}" style="width:${pct}%"></div></div><span class="gig-card-count">${done} / ${total}</span></div>`:''}
@@ -650,6 +654,7 @@ function renderDashboard(){
   el.innerHTML=html;
 }
 function gigProgress(gig){let done=0,total=0;(gig.phases||[]).forEach(p=>p.categories.forEach(c=>c.items.forEach(i=>{total++;if(i.checked)done++;})));return{done,total};}
+function phasesDone(gig){return(gig.phases||[]).map(p=>{const items=p.categories.flatMap(c=>c.items);return items.length>0&&items.every(i=>i.checked);});}
 function gigKitsDone(gig){let n=0;(gig.phases?.[0]?.categories||[]).forEach(c=>{if(c.items.length&&c.items.every(i=>i.checked))n++;});return n;}
 function totalKits(gig){return gig.phases?.[0]?.categories?.length||0;}
 function deleteGig(id){const g=appState.gigs.find(g=>g.id===id);if(!confirm(`Delete "${g?.name||'this gig'}"? This cannot be undone.`))return;appState.gigs=appState.gigs.filter(g=>g.id!==id);saveState();renderDashboard();}
