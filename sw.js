@@ -1,4 +1,4 @@
-const CACHE = 'gig-checklist-v1';
+const CACHE = 'gig-checklist-v2';
 const ASSETS = ['/', '/index.html', '/manifest.json', '/icons/icon.svg'];
 
 self.addEventListener('install', e => {

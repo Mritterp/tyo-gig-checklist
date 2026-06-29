@@ -959,6 +959,25 @@ function renderSettingsScreen(){
   </div>
 </div>
 <div class="settings-section">
+  <div class="settings-section-label">Library Data</div>
+  <div class="settings-card">
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-title">Export Library</div>
+        <div class="settings-row-sub">Download your kits and packs as a JSON file</div>
+      </div>
+      <button onclick="exportLibrary()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">Export</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-title">Import Library</div>
+        <div class="settings-row-sub">Load kits and packs from a previously exported file</div>
+      </div>
+      <button onclick="importLibrary()" style="background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">Import</button>
+    </div>
+  </div>
+</div>
+<div class="settings-section">
   <div class="settings-section-label">About</div>
   <div class="settings-card">
     <div class="settings-row">
@@ -970,6 +989,34 @@ function renderSettingsScreen(){
     </div>
   </div>
 </div>`;
+}
+function exportLibrary(){
+  const data={version:1,exported:new Date().toISOString(),categories:appState.categories,templates:appState.templates,templateOrder:appState.templateOrder};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='gig-checklist-library.json';a.click();URL.revokeObjectURL(url);
+  showToast('Library exported');
+}
+function importLibrary(){
+  const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(!Array.isArray(data.categories)||!Array.isArray(data.templates)){showToast('Invalid file');return;}
+        if(!confirm('Replace your current library with the imported data? Your existing kits and packs will be overwritten.'))return;
+        appState.categories=data.categories;
+        appState.templates=data.templates;
+        if(data.templateOrder)appState.templateOrder=data.templateOrder;
+        appState.categories.forEach(cat=>{cat.items=migrateItems(cat.items||[]);if(!cat.setup)cat.setup=[];if(!cat.teardown)cat.teardown=[];});
+        saveState();showToast('Library imported');
+      }catch(err){showToast('Could not read file');}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 function toggleSetting(key){
   const s=getSettings();
