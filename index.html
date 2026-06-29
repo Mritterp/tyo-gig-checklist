@@ -282,6 +282,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   .app-header,.dash-main,.form-main,.cl-main,.lib-main{padding-left:16px;padding-right:16px;}
   .cl-header{padding-left:16px;padding-right:16px;}
 }
+/* Dark mode */
+body.dark{
+  --bg:#1C1C1E;--surface:#2C2C2E;--surface2:#3A3A3C;--surface3:#48484A;
+  --border:#38383A;--border2:#545456;
+  --text:#F2F2F7;--text-muted:#8E8E93;--text-dim:#EBEBF5;--text-faint:#636366;
+  --blue:#4A9EFF;--blue-dim:#1A2F4A;--blue-border:#2A4A78;
+  --green:#30D158;--green-dim:#0D2E18;--green-border:#1A5C30;
+  --orange:#FF9F0A;--orange-dim:#2E1F00;--orange-border:#6B4200;
+  --danger:#FF453A;--danger-dim:rgba(255,69,58,0.15);
+}
 /* Text size overrides */
 body.text-large .item-text{font-size:16px;}
 body.text-large .category-title{font-size:17px;}
@@ -962,6 +972,8 @@ function goSettings(){renderSettingsScreen();showScreen('screenSettings');setAct
 function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,twoDaysBeforeAlert:true,nightBeforeAlert:true,textSize:'normal'});}
 function applyTextSize(){const s=getSettings();document.body.classList.remove('text-large','text-xlarge');if(s.textSize==='large')document.body.classList.add('text-large');else if(s.textSize==='xlarge')document.body.classList.add('text-xlarge');}
 function setTextSize(size){const s=getSettings();s.textSize=size;saveSettings();applyTextSize();renderSettingsScreen();}
+function applyDarkMode(){const s=getSettings();document.body.classList.toggle('dark',!!s.darkMode);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',s.darkMode?'#1C1C1E':'#1A73E8');}
+function toggleDarkMode(){const s=getSettings();s.darkMode=!s.darkMode;saveSettings();applyDarkMode();renderSettingsScreen();}
 function saveSettings(){saveState();}
 function renderSettingsScreen(){
   const s=getSettings();
@@ -969,6 +981,17 @@ function renderSettingsScreen(){
   const notifStatus=notifSupported?Notification.permission:'unavailable';
   const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked in your browser. Enable them in your browser settings to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   document.getElementById('settingsMain').innerHTML=`
+<div class="settings-section">
+  <div class="settings-section-label">Appearance</div>
+  <div class="settings-card">
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-title">Dark Mode</div>
+      </div>
+      <button class="settings-toggle ${s.darkMode?'on':''}" onclick="toggleDarkMode()"><span class="st-dot"></span></button>
+    </div>
+  </div>
+</div>
 <div class="settings-section">
   <div class="settings-section-label">Text Size</div>
   <div class="settings-card">
@@ -1090,6 +1113,7 @@ function toggleSetting(key){
 // ═══ INIT ═══
 loadState();
 applyTextSize();
+applyDarkMode();
 renderDashboard();
 
 // ═══ PWA ═══
