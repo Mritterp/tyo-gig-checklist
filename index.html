@@ -161,8 +161,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .shared-toggle .st-dot{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .2s;}
 .shared-toggle.on .st-dot{transform:translateX(13px);}
 
-.kit-routine-tabs{display:flex;gap:14px;padding:0 0 8px;border-bottom:1px solid var(--green-border);margin:0 0 10px;font-size:10px;font-weight:600;letter-spacing:1px;}
-.kit-rtab{color:var(--text-faint);cursor:pointer;padding-bottom:6px;border-bottom:2px solid transparent;margin-bottom:-9px;user-select:none;}
+.kit-routine-tabs{display:flex;gap:0;padding:0 0 0;border-bottom:1px solid var(--green-border);margin:0 0 10px;}
+.kit-rtab{flex:1;text-align:center;color:var(--text-faint);cursor:pointer;padding:10px 0 8px;border-bottom:2px solid transparent;margin-bottom:-1px;user-select:none;font-size:12px;font-weight:600;letter-spacing:1px;}
 .kit-rtab.active{color:var(--text);border-bottom-color:var(--green);}
 .kit-rtab-count{color:var(--text-faint);font-weight:400;}
 .kit-rtab.active .kit-rtab-count{color:var(--text-muted);}
@@ -282,6 +282,23 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   .app-header,.dash-main,.form-main,.cl-main,.lib-main{padding-left:16px;padding-right:16px;}
   .cl-header{padding-left:16px;padding-right:16px;}
 }
+/* Text size overrides */
+body.text-large .item-text{font-size:16px;}
+body.text-large .category-title{font-size:17px;}
+body.text-large .kit-card-name{font-size:15px;}
+body.text-large .gig-card-name{font-size:19px;}
+body.text-large .up-next-name{font-size:21px;}
+body.text-large .lib-item-name{font-size:17px;}
+body.text-xlarge .item-text{font-size:19px;}
+body.text-xlarge .category-title{font-size:20px;}
+body.text-xlarge .kit-card-name{font-size:17px;}
+body.text-xlarge .gig-card-name{font-size:21px;}
+body.text-xlarge .up-next-name{font-size:23px;}
+body.text-xlarge .lib-item-name{font-size:19px;}
+/* Text size picker */
+.text-size-picker{display:flex;gap:8px;margin-top:2px;}
+.tsz-btn{flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text-muted);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
+.tsz-btn.active{border-color:var(--blue);background:var(--blue);color:#fff;}
 </style>
 </head>
 <body>
@@ -912,7 +929,9 @@ document.getElementById('clGigNameInput').addEventListener('keydown',e=>{if(e.ke
 
 // ═══ SETTINGS ═══
 function goSettings(){renderSettingsScreen();showScreen('screenSettings');setActiveTab('settings');}
-function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,twoDaysBeforeAlert:true,nightBeforeAlert:true});}
+function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,twoDaysBeforeAlert:true,nightBeforeAlert:true,textSize:'normal'});}
+function applyTextSize(){const s=getSettings();document.body.classList.remove('text-large','text-xlarge');if(s.textSize==='large')document.body.classList.add('text-large');else if(s.textSize==='xlarge')document.body.classList.add('text-xlarge');}
+function setTextSize(size){const s=getSettings();s.textSize=size;saveSettings();applyTextSize();renderSettingsScreen();}
 function saveSettings(){saveState();}
 function renderSettingsScreen(){
   const s=getSettings();
@@ -920,6 +939,18 @@ function renderSettingsScreen(){
   const notifStatus=notifSupported?Notification.permission:'unavailable';
   const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked in your browser. Enable them in your browser settings to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   document.getElementById('settingsMain').innerHTML=`
+<div class="settings-section">
+  <div class="settings-section-label">Text Size</div>
+  <div class="settings-card">
+    <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div class="text-size-picker">
+        <button class="tsz-btn ${(!s.textSize||s.textSize==='normal')?'active':''}" onclick="setTextSize('normal')" style="font-size:13px;">Normal</button>
+        <button class="tsz-btn ${s.textSize==='large'?'active':''}" onclick="setTextSize('large')" style="font-size:15px;">Large</button>
+        <button class="tsz-btn ${s.textSize==='xlarge'?'active':''}" onclick="setTextSize('xlarge')" style="font-size:17px;">X-Large</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="settings-section">
   <div class="settings-section-label">Reminders &amp; Alerts</div>
   <div class="settings-card">
@@ -1028,6 +1059,7 @@ function toggleSetting(key){
 
 // ═══ INIT ═══
 loadState();
+applyTextSize();
 renderDashboard();
 
 // ═══ PWA ═══
