@@ -1213,7 +1213,7 @@ function renderSettingsScreen(){
       <button onclick="document.getElementById('csvFileInput').click()" style="background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">Import CSV</button>
       <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="importCSV(this)">
     </div>
-    <div class="settings-row" style="flex-direction:column;align-items:stretch;padding-top:12px;padding-bottom:${_importPanelOpen?'12':'0'}px;">
+    <div class="settings-row" style="flex-direction:column;align-items:stretch;padding-top:12px;padding-bottom:12px;">
       <span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderSettingsScreen()" style="font-size:13px;margin-bottom:${_importPanelOpen?'12':'0'}px;">
         ${_importPanelOpen?'▾ Hide CSV guide':'▸ How to format your CSV'}
       </span>
@@ -1228,7 +1228,7 @@ function renderSettingsScreen(){
         </table>
         <div style="margin-top:10px;margin-bottom:10px;">Blank cells are skipped. Existing kits are appended, not replaced.</div>
         <div style="margin-bottom:6px;font-weight:600;color:var(--text-dim);">Example:</div>
-        <div style="overflow-x:auto;">
+        <div style="overflow-x:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-x;">
         <table style="width:100%;border-collapse:collapse;font-size:10.5px;white-space:nowrap;">
           <tr style="background:var(--surface2);">
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Kit Name</th>
