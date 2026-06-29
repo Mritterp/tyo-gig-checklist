@@ -150,7 +150,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-item-row{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:7px;transition:background .1s,border-color .1s;}
 .kit-item-row.shared-on{background:var(--orange-dim);border-color:var(--orange-border);border-left:3px solid var(--orange);}
 .kit-item-bang{width:14px;height:14px;border-radius:50%;background:var(--orange);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.kit-item-input{flex:1;font-size:13px;color:var(--text-dim);background:transparent;border:none;border-bottom:1px solid transparent;outline:none;padding:2px 0;font-family:'Inter',sans-serif;}
+.kit-item-input{flex:1;min-width:0;font-size:13px;color:var(--text-dim);background:transparent;border:none;border-bottom:1px solid transparent;outline:none;padding:2px 0;font-family:'Inter',sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .kit-item-input:focus{border-color:var(--border2);}
 .kit-shared-label{font-size:9px;font-weight:600;letter-spacing:.5px;flex-shrink:0;text-align:right;}
 .kit-shared-label.on{color:var(--orange);}
@@ -698,7 +698,7 @@ function renderLibKit(cat){
         <span class="drag-handle">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
-        ${item.shared?`<span class="kit-shared-label on">IMPORTANT</span>`:''}
+        <span class="kit-shared-label ${item.shared?'on':'off'}" style="${item.shared?'':'visibility:hidden'}">IMPORTANT</span>
         <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
         <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
       </div>`).join('')}
