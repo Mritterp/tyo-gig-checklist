@@ -546,40 +546,54 @@ function orderedTemplates(){
 }
 // Pointer-based drag (works on touch + mouse)
 let _tplDrag=null;
-function _cardAtPoint(x,y,excludeId){
+function _nearestCard(cx,cy,excludeId){
+  let best=null,bestDist=Infinity;
   for(const c of document.querySelectorAll('.kit-card')){
     if(c.id==='kitcard_'+excludeId)continue;
     const r=c.getBoundingClientRect();
-    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return c;
+    const dist=Math.hypot(cx-(r.left+r.width/2),cy-(r.top+r.height/2));
+    if(dist<bestDist){bestDist=dist;best=c;}
   }
-  return null;
+  return best;
 }
 function startTplDrag(e,id){
-  e.preventDefault();e.stopPropagation();
+  if(e.target.closest('.kit-card-check'))return;
   const card=document.getElementById('kitcard_'+id);if(!card)return;
   const rect=card.getBoundingClientRect();
-  const ghost=card.cloneNode(true);
-  ghost.removeAttribute('id');
-  ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);border-radius:10px;`;
-  document.body.appendChild(ghost);
-  card.style.opacity='0.35';
-  _tplDrag={id,ghost,card,ox:e.clientX-rect.left,oy:e.clientY-rect.top,lastX:e.clientX,lastY:e.clientY};
+  _tplDrag={id,card,ghost:null,ox:e.clientX-rect.left,oy:e.clientY-rect.top,gw:rect.width,gh:rect.height,startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastY:e.clientY,active:false};
   document.addEventListener('pointermove',_onTplMove,{passive:false});
   document.addEventListener('pointerup',_onTplUp);
   document.addEventListener('pointercancel',_onTplCancel);
 }
+function _ghostCenter(px,py){
+  return{cx:px-_tplDrag.ox+_tplDrag.gw/2,cy:py-_tplDrag.oy+_tplDrag.gh/2};
+}
 function _onTplMove(e){
   if(!_tplDrag)return;
-  e.preventDefault();
   _tplDrag.lastX=e.clientX;_tplDrag.lastY=e.clientY;
+  if(!_tplDrag.active){
+    if(Math.hypot(e.clientX-_tplDrag.startX,e.clientY-_tplDrag.startY)<8)return;
+    // Threshold crossed — commit to drag
+    _tplDrag.active=true;
+    const ghost=_tplDrag.card.cloneNode(true);ghost.removeAttribute('id');
+    const r=_tplDrag.card.getBoundingClientRect();
+    ghost.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);border-radius:10px;`;
+    document.body.appendChild(ghost);
+    _tplDrag.card.style.opacity='0.35';
+    _tplDrag.ghost=ghost;
+    // Block the upcoming click so it doesn't toggle selection
+    document.addEventListener('click',function(ev){ev.stopPropagation();},{once:true,capture:true});
+  }
+  e.preventDefault();
   _tplDrag.ghost.style.left=(e.clientX-_tplDrag.ox)+'px';
   _tplDrag.ghost.style.top=(e.clientY-_tplDrag.oy)+'px';
+  const{cx,cy}=_ghostCenter(e.clientX,e.clientY);
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
-  _cardAtPoint(e.clientX,e.clientY,_tplDrag.id)?.classList.add('drag-over');
+  _nearestCard(cx,cy,_tplDrag.id)?.classList.add('drag-over');
 }
 function _onTplCancel(){
   if(!_tplDrag)return;
-  _tplDrag.ghost.remove();_tplDrag.card.style.opacity='';
+  if(_tplDrag.ghost){_tplDrag.ghost.remove();_tplDrag.card.style.opacity='';}
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   document.removeEventListener('pointermove',_onTplMove);
   document.removeEventListener('pointerup',_onTplUp);
@@ -588,15 +602,17 @@ function _onTplCancel(){
 }
 function _onTplUp(e){
   if(!_tplDrag)return;
-  const{id,ghost,card,lastX,lastY}=_tplDrag;
-  const x=e?.clientX??lastX,y=e?.clientY??lastY;
-  ghost.remove();card.style.opacity='';
+  const{id,ghost,card,active,lastX,lastY,ox,oy,gw,gh}=_tplDrag;
+  const px=e?.clientX??lastX,py=e?.clientY??lastY;
+  if(ghost){ghost.remove();card.style.opacity='';}
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   document.removeEventListener('pointermove',_onTplMove);
   document.removeEventListener('pointerup',_onTplUp);
   document.removeEventListener('pointercancel',_onTplCancel);
   _tplDrag=null;
-  const dropId=_cardAtPoint(x,y,id)?.id?.replace('kitcard_','');
+  if(!active)return;
+  const cx=px-ox+gw/2,cy=py-oy+gh/2;
+  const dropId=_nearestCard(cx,cy,id)?.id?.replace('kitcard_','');
   if(dropId){
     const order=appState.templateOrder||appState.templates.map(t=>t.id);
     const fi=order.indexOf(id),ti=order.indexOf(dropId);
@@ -605,11 +621,10 @@ function _onTplUp(e){
 }
 function renderKitGrid(){
   document.getElementById('kitGrid').innerHTML=orderedTemplates().map(t=>`
-<div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')">
+<div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')" onpointerdown="startTplDrag(event,'${t.id}')">
   <div class="kit-card-check">${svgCheck(9)}</div>
   <div class="kit-card-name">${escHtml(t.name)}</div>
   <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?c.title:''}).filter(Boolean).join(' · ')}</div>
-  <div class="kit-drag-handle" onpointerdown="startTplDrag(event,'${t.id}')">⋮⋮</div>
 </div>`).join('');
 }
 function toggleKit(id){selectedKitIds.has(id)?selectedKitIds.delete(id):selectedKitIds.add(id);document.getElementById('kitcard_'+id)?.classList.toggle('selected',selectedKitIds.has(id));updateBuildBar();}
