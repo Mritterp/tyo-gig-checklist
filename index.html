@@ -1245,17 +1245,20 @@ function updateClProgress(){
     const pct=total?Math.round(done/total*100):0;
     return{ph,pi,done,total,pct};
   });
-  // Mobile active-phase bar
-  const active=phases[activePhaseIdx]||phases[0];
-  const kd=active.ph.categories.filter(c=>c.items.length&&c.items.every(i=>i.checked)).length;
-  document.getElementById('clProgressLabel').innerHTML=`<b>${kd} / ${active.ph.categories.length} kits</b> · ${active.done} / ${active.total} items`;
-  document.getElementById('clProgressPct').textContent=active.pct+'%';
+  // Master progress bar — all phases combined
+  const totalDone=phases.reduce((s,p)=>s+p.done,0);
+  const totalAll=phases.reduce((s,p)=>s+p.total,0);
+  const totalPct=totalAll?Math.round(totalDone/totalAll*100):0;
+  const kd=gig.phases[0]?.categories.filter(c=>c.items.length&&c.items.every(i=>i.checked)).length||0;
+  const kt=gig.phases[0]?.categories.length||0;
+  document.getElementById('clProgressLabel').innerHTML=`<b>${kd} / ${kt} kits packed</b> · ${totalDone} / ${totalAll} total items`;
+  document.getElementById('clProgressPct').textContent=totalPct+'%';
   const fill=document.getElementById('progressFill');
   if(fill){
     const wasFull=parseFloat(fill.style.width||0)>=100;
-    fill.style.width=active.pct+'%';
-    fill.style.background=active.pct===100?'var(--green)':'var(--orange)';
-    if(active.pct===100&&!wasFull){fill.classList.add('flash');fill.addEventListener('animationend',()=>fill.classList.remove('flash'),{once:true});const f=document.getElementById('completeFlash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),800);}
+    fill.style.width=totalPct+'%';
+    fill.style.background=totalPct===100?'var(--green)':'var(--orange)';
+    if(totalPct===100&&!wasFull){fill.classList.add('flash');fill.addEventListener('animationend',()=>fill.classList.remove('flash'),{once:true});const f=document.getElementById('completeFlash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),800);}
   }
   // Mobile P/S/W dots in header
   const mobileDots=document.getElementById('clPhaseDots');
