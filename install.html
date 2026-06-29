@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Install Gig Checklist</title>
+<link rel="manifest" href="/tyo-gig-checklist/manifest.json">
+<meta name="theme-color" content="#1A73E8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F3F5;color:#1C1C1E;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;padding-bottom:calc(32px + env(safe-area-inset-bottom));}
+
+.icon{width:96px;height:96px;border-radius:22px;background:#1A73E8;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 8px 32px rgba(26,115,232,.3);}
+.icon svg{width:56px;height:56px;}
+
+h1{font-size:28px;font-weight:700;text-align:center;margin-bottom:8px;font-family:Georgia,serif;}
+.subtitle{font-size:15px;color:#6E6E73;text-align:center;margin-bottom:40px;line-height:1.5;}
+
+/* Already installed */
+.already{background:#fff;border:1px solid #E5E5EA;border-radius:16px;padding:24px;text-align:center;max-width:360px;width:100%;}
+.already-icon{font-size:48px;margin-bottom:12px;}
+.already h2{font-size:18px;font-weight:700;margin-bottom:8px;}
+.already p{font-size:14px;color:#6E6E73;margin-bottom:20px;}
+.open-btn{display:block;background:#1A73E8;color:#fff;text-decoration:none;border-radius:12px;padding:14px 24px;font-size:16px;font-weight:700;text-align:center;}
+
+/* Android install */
+.android-card{background:#fff;border:1px solid #E5E5EA;border-radius:16px;padding:28px 24px;text-align:center;max-width:360px;width:100%;}
+.android-card h2{font-size:20px;font-weight:700;margin-bottom:8px;}
+.android-card p{font-size:14px;color:#6E6E73;margin-bottom:24px;line-height:1.5;}
+.install-btn{width:100%;background:#1A73E8;color:#fff;border:none;border-radius:12px;padding:16px 24px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s;}
+.install-btn:active{background:#1557b0;}
+.install-btn svg{flex-shrink:0;}
+
+/* iOS steps */
+.ios-card{background:#fff;border:1px solid #E5E5EA;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;}
+.ios-card h2{font-size:20px;font-weight:700;margin-bottom:6px;text-align:center;}
+.ios-card .browser-note{font-size:13px;color:#FF9500;font-weight:600;text-align:center;margin-bottom:24px;}
+.step{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;}
+.step:last-child{margin-bottom:0;}
+.step-num{width:32px;height:32px;border-radius:50%;background:#1A73E8;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-text{padding-top:6px;}
+.step-title{font-size:15px;font-weight:600;color:#1C1C1E;margin-bottom:2px;}
+.step-sub{font-size:13px;color:#6E6E73;line-height:1.4;}
+.step-sub strong{color:#1C1C1E;}
+
+/* Arrow animation for iOS share button */
+.share-arrow{display:flex;flex-direction:column;align-items:center;margin:28px 0 4px;}
+.share-icon{width:44px;height:44px;background:#1A73E8;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.arrow-bounce{animation:bounce 1.2s ease-in-out infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+/* Not supported */
+.unsupported{background:#fff;border:1px solid #E5E5EA;border-radius:16px;padding:24px;text-align:center;max-width:360px;width:100%;}
+.unsupported h2{font-size:18px;font-weight:700;margin-bottom:8px;}
+.unsupported p{font-size:14px;color:#6E6E73;line-height:1.5;margin-bottom:12px;}
+.url-box{background:#F2F3F5;border-radius:8px;padding:12px 14px;font-size:13px;font-weight:600;color:#1A73E8;word-break:break-all;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="icon">
+  <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="128,272 218,362 384,150" fill="none" stroke="#ffffff" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<h1>Gig Checklist</h1>
+<p class="subtitle">Pack the right gear for every gig.</p>
+
+<div id="content"></div>
+
+<script>
+const APP_URL = 'https://mritterp.github.io/tyo-gig-checklist/';
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isAndroid = /android/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const isChromeMobile = /chrome/i.test(navigator.userAgent) && isAndroid;
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  renderContent();
+});
+
+function renderContent() {
+  const el = document.getElementById('content');
+
+  if (isStandalone) {
+    el.innerHTML = `
+      <div class="already">
+        <div class="already-icon">✅</div>
+        <h2>Already Installed!</h2>
+        <p>Gig Checklist is on your home screen and ready to go.</p>
+        <a class="open-btn" href="${APP_URL}">Open App →</a>
+      </div>`;
+    return;
+  }
+
+  if (deferredPrompt) {
+    el.innerHTML = `
+      <div class="android-card">
+        <h2>Install Gig Checklist</h2>
+        <p>Add it to your home screen for quick access — works offline too.</p>
+        <button class="install-btn" id="installBtn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v13M7 11l5 5 5-5"/><path d="M3 19h18"/>
+          </svg>
+          Add to Home Screen
+        </button>
+      </div>`;
+    document.getElementById('installBtn').onclick = async () => {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        document.getElementById('content').innerHTML = `
+          <div class="already">
+            <div class="already-icon">🎉</div>
+            <h2>Installed!</h2>
+            <p>Find Gig Checklist on your home screen.</p>
+            <a class="open-btn" href="${APP_URL}">Open App →</a>
+          </div>`;
+      }
+      deferredPrompt = null;
+    };
+    return;
+  }
+
+  if (isIOS) {
+    const safariNote = isSafari ? '' : '<div class="browser-note">⚠ Open this page in Safari to install</div>';
+    el.innerHTML = `
+      <div class="ios-card">
+        <h2>Install on iPhone</h2>
+        ${safariNote}
+        <div class="share-arrow">
+          <div class="arrow-bounce">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A73E8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <div class="step-title">Tap the Share button</div>
+            <div class="step-sub">The <strong>□↑</strong> icon at the bottom of Safari</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <div class="step-title">Tap "Add to Home Screen"</div>
+            <div class="step-sub">Scroll down in the share sheet to find it</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <div class="step-title">Tap Add</div>
+            <div class="step-sub">Gig Checklist will appear on your home screen</div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (isAndroid) {
+    el.innerHTML = `
+      <div class="android-card">
+        <h2>Install on Android</h2>
+        <p>Open this page in <strong>Chrome</strong>, then tap the menu (⋮) and select <strong>"Add to Home Screen"</strong>.</p>
+        <a class="install-btn" href="${APP_URL}" style="text-decoration:none;">Open in Chrome →</a>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="unsupported">
+      <h2>Open on your phone</h2>
+      <p>Visit this URL on your phone to install Gig Checklist:</p>
+      <div class="url-box">mritterp.github.io/tyo-gig-checklist</div>
+    </div>`;
+}
+
+renderContent();
+
+// Fallback: if beforeinstallprompt fires after render
+window.addEventListener('appinstalled', () => {
+  document.getElementById('content').innerHTML = `
+    <div class="already">
+      <div class="already-icon">🎉</div>
+      <h2>Installed!</h2>
+      <p>Find Gig Checklist on your home screen.</p>
+      <a class="open-btn" href="${APP_URL}">Open App →</a>
+    </div>`;
+});
+</script>
+</body>
+</html>
