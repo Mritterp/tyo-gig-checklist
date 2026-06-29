@@ -1044,12 +1044,12 @@ renderDashboard();
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js'));
 }
-// Keep tab bar flush with bottom when keyboard opens (Android)
+// Keep tab bar flush when keyboard opens (Android) — threshold avoids reacting to address bar
 if(window.visualViewport){
   const tabBar=document.getElementById('globalTabBar');
   window.visualViewport.addEventListener('resize',()=>{
     const gap=window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop;
-    tabBar.style.bottom=Math.max(0,gap)+'px';
+    tabBar.style.bottom=(gap>150?gap:0)+'px';
   });
 }
 </script>
