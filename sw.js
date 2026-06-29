@@ -1,4 +1,4 @@
-const CACHE = 'gig-checklist-v4';
+const CACHE = 'gig-checklist-v5';
 const ASSETS = ['/tyo-gig-checklist/', '/tyo-gig-checklist/index.html', '/tyo-gig-checklist/manifest.json', '/tyo-gig-checklist/icons/icon.svg'];
 
 self.addEventListener('install', e => {
