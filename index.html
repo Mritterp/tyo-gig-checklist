@@ -71,7 +71,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .gig-card-bar-fill.done{background:var(--green);}
 .gig-card-count{font-size:12px;color:var(--text-muted);flex-shrink:0;}
 .gig-phase-dots{display:flex;gap:3px;align-items:center;flex-shrink:0;}
-.gig-phase-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);color:var(--text-faint);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
+.gig-phase-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface3);color:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
 .gig-phase-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
 .gig-card-del{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text-faint);padding:4px;opacity:0;transition:opacity .15s;}
 .gig-card:hover .gig-card-del{opacity:1;}
@@ -568,6 +568,9 @@ function loadState(){
   try{const s=localStorage.getItem('tyo_v5');if(s)appState=JSON.parse(s);}catch(e){}
   if(!appState.categories)appState.categories=JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
   if(!appState.templates)appState.templates=JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
+  // Migrate: rename Teardown → Wrap on existing gigs
+  (appState.gigs||[]).forEach(g=>(g.phases||[]).forEach(p=>{if(p.label==='Teardown')p.label='Wrap';}));
+  saveState();
   if(!appState.gigs)appState.gigs=[];
   appState.categories.forEach(cat=>{
     cat.items=migrateItems(cat.items||[]);
@@ -637,7 +640,7 @@ function renderDashboard(){
       const tn=(g.kitIds||[]).map(id=>getTpl(id)?.name).filter(Boolean).join(' + ');
       const meta=[ds,tn].filter(Boolean).join(' · ');
       const pd=phasesDone(g);
-      const labels=['P','S','T'];
+      const labels=['P','S','W'];
       const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>`<div class="gig-phase-dot${pd[i]?' done':''}">${l}</div>`).join('')}</div>`;
       html+=`<div class="gig-card" onclick="openGig('${g.id}')">
   <button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${g.id}')">${svgX(11)}</button>
@@ -862,7 +865,7 @@ function buildGig(){
   const gig={id:uid(),name,date,callTime,kitIds:[...selectedKitIds],phases:[
     {id:'packing',label:'Packing',categories:packing},
     buildRoutinePhase(packing,'setup','setup','Setup'),
-    buildRoutinePhase(packing,'teardown','teardown','Teardown'),
+    buildRoutinePhase(packing,'teardown','teardown','Wrap'),
   ]};
   appState.gigs.unshift(gig);saveState();
   activeGigId=gig.id;activePhaseIdx=0;renderChecklistScreen();showScreen('screenChecklist');
@@ -1005,7 +1008,7 @@ function renderLibKit(cat){
     <div class="kit-routine-tabs">
       <span class="kit-rtab ${rtab==='packing'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','packing')">PACKING <span class="kit-rtab-count">${cat.items.length}</span></span>
       <span class="kit-rtab ${rtab==='setup'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','setup')">SETUP <span class="kit-rtab-count">${(cat.setup||[]).length}</span></span>
-      <span class="kit-rtab ${rtab==='teardown'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','teardown')">TEARDOWN <span class="kit-rtab-count">${(cat.teardown||[]).length}</span></span>
+      <span class="kit-rtab ${rtab==='teardown'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','teardown')">WRAP <span class="kit-rtab-count">${(cat.teardown||[]).length}</span></span>
     </div>
     ${isWide()?`<div class="lib-routines-dt">
       <div class="lib-routine-col">
@@ -1029,7 +1032,7 @@ function renderLibKit(cat){
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>
       </div>
       <div class="lib-routine-col">
-        <div class="lib-routine-col-label">TEARDOWN <span style="color:var(--text-muted);font-weight:400">${(cat.teardown||[]).length}</span></div>
+        <div class="lib-routine-col-label">WRAP <span style="color:var(--text-muted);font-weight:400">${(cat.teardown||[]).length}</span></div>
         <div id="kitlist_teardown_${cat.id}">
           ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
@@ -1060,7 +1063,7 @@ function renderLibKit(cat){
     <div id="kitlist_${cat.id}">
       ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
-    <div class="lib-hint">Steps for striking this kit. Appears in the gig's Teardown tab.</div>
+    <div class="lib-hint">Steps for striking this kit. Appears in the gig's Wrap tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>`}
     <div class="lib-footer">
       <button class="lib-save" onclick="saveCatAndPropagate('${cat.id}')">SAVE</button>
@@ -1248,7 +1251,7 @@ function renderPhaseContent(){
       html+=`<div class="dt-phase-col">
         <div class="dt-phase-label">${phase.label.toUpperCase()}<span class="phase-stats ${pct===100?'complete':''}">${done}/${total}</span></div>
         <div class="dt-phase-actions"><button class="sm-btn" onclick="resetPhase(${pi})">Reset</button><button class="sm-btn green" onclick="checkAllPhase(${pi})">Check All</button></div>`;
-      if(pi===2)html+=`<div class="teardown-lead">Everything that went out comes back.</div>`;
+      if(pi===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up.</div>`;
       phase.categories.forEach(cat=>{html+=renderCategory(cat,pi);});
       html+=`</div>`;
     });
@@ -1260,7 +1263,7 @@ function renderPhaseContent(){
   const phase=gig.phases[activePhaseIdx];
   const{done,total}=phaseProgress(phase);const pct=total?Math.round(done/total*100):0;
   let html=`<div class="phase-header"><div class="phase-stats ${pct===100?'complete':''}"><em>${done}</em> / ${total} items</div><div class="phase-actions"><button class="sm-btn" onclick="resetPhase()">Reset</button><button class="sm-btn green" onclick="checkAllPhase()">Check All</button></div></div>`;
-  if(activePhaseIdx===2)html+=`<div class="teardown-lead">Everything that went out comes back. Confirm each kit before you leave.</div>`;
+  if(activePhaseIdx===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up. Confirm each kit before you leave.</div>`;
   phase.categories.forEach(cat=>{html+=renderCategory(cat,activePhaseIdx);});
   html+=`<button class="add-cat-btn" onclick="addCategory()">${svgPlus(10)} Add Kit</button>`;
   if(activePhaseIdx===0)html+=`<div class="cl-hint">Tap row to expand · tap ○ to pack whole kit · long-press item to edit</div>`;
@@ -1408,7 +1411,7 @@ function renderSettingsScreen(){
           <tr><td>Packing</td><td>The kit item that will appear on the packing list</td></tr>
           <tr><td>Important</td><td>Any value — flags the packing item as IMPORTANT</td></tr>
           <tr><td>Setup</td><td>The step that will appear on the setup list</td></tr>
-          <tr><td>Teardown</td><td>The step that will appear on the teardown list</td></tr>
+          <tr><td>Wrap</td><td>The step that will appear on the wrap list</td></tr>
         </table>
         <div style="margin-top:10px;margin-bottom:10px;">Blank cells are skipped. Existing kits are appended, not replaced. <span style="color:var(--text-faint);">Note: Important currently applies to packing items only.</span></div>
         <div style="margin-bottom:6px;font-weight:600;color:var(--text-dim);">Example:</div>
@@ -1419,7 +1422,7 @@ function renderSettingsScreen(){
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Packing</th>
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Important</th>
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Setup</th>
-            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Teardown</th>
+            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Wrap</th>
           </tr>
           <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Lectrosonics RX × 2</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">yes</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Place cart stage left</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Coil all cables</td></tr>
           <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Boom pole</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Power on receivers</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Bag all cables</td></tr>
