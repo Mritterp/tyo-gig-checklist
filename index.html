@@ -1173,8 +1173,10 @@ function renderGigRail(){
     const done=gigKitsDone(g),total=totalKits(g);
     const pct=total?Math.round(done/total*100):0;
     const barColor=pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)';
+    const pd=phasesDone(g);
+    const railDots=['P','S','W'].map((l,i)=>`<div class="gig-phase-dot${pd[i]?' done':''}" style="width:14px;height:14px;font-size:7px">${l}</div>`).join('');
     html+=`<div class="gig-rail-item${active?' active':''}" onclick="openGig('${g.id}')">
-      <div class="gig-rail-name">${escHtml(g.name)}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div class="gig-phase-dots">${railDots}</div><div class="gig-rail-name" style="margin-bottom:0">${escHtml(g.name)}</div></div>
       <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' kits':''}</div>
       ${total?`<div class="gig-rail-bar"><div class="gig-rail-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>`:''}
     </div>`;
