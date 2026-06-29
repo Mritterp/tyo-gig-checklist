@@ -35,7 +35,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .tbi.active{color:var(--blue);border-top-color:var(--blue);}
 
 /* DASHBOARD */
-.dash-main{flex:1;padding:18px 18px 0;overflow-y:auto;}
+.dash-main{flex:1;padding:18px 18px 0;overflow-y:auto;padding-bottom:64px;}
 .section-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
 .section-label.orange{color:var(--orange);}
 .section-label.muted{color:var(--text-faint);}
@@ -73,7 +73,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .empty-state strong{display:block;color:var(--text-dim);font-size:15px;margin-bottom:6px;}
 
 /* NEW GIG */
-.form-main{flex:1;padding:18px 18px 100px;overflow-y:auto;}
+.form-main{flex:1;padding:18px 18px 148px;overflow-y:auto;}
 .field-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px;display:block;}
 .field-label.orange{color:var(--orange);}
 .field-group{margin-bottom:18px;}
@@ -104,13 +104,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .extra-task-remove{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;display:flex;align-items:center;}
 .add-extra-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:6px 0;font-family:'Inter',sans-serif;}
 
-.build-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:100;}
+.build-bar{position:fixed;bottom:48px;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:100;}
 .build-summary{font-size:12px;color:var(--text-muted);}
 .build-btn{padding:12px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:1px;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;}
 .build-btn:disabled{opacity:.3;cursor:not-allowed;}
 
 /* LIBRARY */
-.lib-main{flex:1;padding:14px 18px 60px;overflow-y:auto;}
+.lib-main{flex:1;padding:14px 18px 64px;overflow-y:auto;}
 .seg-ctrl{display:flex;gap:4px;background:var(--surface3);border-radius:10px;padding:3px;margin-bottom:16px;}
 .seg-tab{flex:1;text-align:center;padding:9px;border-radius:8px;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--text-muted);cursor:pointer;user-select:none;transition:all .15s;}
 .seg-tab.active{background:var(--surface);color:var(--text);}
@@ -184,7 +184,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 @keyframes pulseComplete{0%,100%{opacity:1}50%{opacity:.4}}
 .cl-progress-fill.flash{animation:pulseComplete .5s ease-in-out 2;}
 
-.cl-main{flex:1;overflow-y:auto;padding:14px 18px 80px;}
+.cl-main{flex:1;overflow-y:auto;padding:14px 18px 64px;}
 .phase-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
 .phase-stats{font-size:13px;color:var(--text-muted);}
 .phase-stats em{color:var(--text);font-style:normal;font-weight:600;}
@@ -240,7 +240,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .teardown-lead{font-size:12px;color:var(--text-muted);line-height:1.5;padding:0 2px 10px;}
 
 /* SETTINGS */
-.settings-main{flex:1;padding:18px;overflow-y:auto;}
+.settings-main{flex:1;padding:18px 18px 64px;overflow-y:auto;}
 .settings-section{margin-bottom:28px;}
 .settings-section-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px;}
 .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
@@ -254,6 +254,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .settings-toggle .st-dot{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .25s;}
 .settings-toggle.on .st-dot{transform:translateX(18px);}
 .settings-note{font-size:11px;color:var(--text-faint);line-height:1.5;margin-top:8px;padding:0 2px;}
+
+/* GLOBAL TAB BAR */
+.global-tab-bar{position:fixed;bottom:0;left:0;right:0;display:flex;border-top:1px solid var(--border);background:var(--surface);z-index:150;}
+.gtbi{flex:1;text-align:center;padding:11px 0 13px;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-faint);cursor:pointer;border-top:2px solid transparent;margin-top:-1px;transition:color .15s,border-color .15s;user-select:none;}
+.gtbi.active{color:var(--blue);border-top-color:var(--blue);}
 
 /* UTILS */
 .complete-flash{position:fixed;inset:0;pointer-events:none;z-index:999;opacity:0;background:radial-gradient(ellipse at center,rgba(52,199,89,.08) 0%,transparent 70%);transition:opacity .3s;}
@@ -271,17 +276,19 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 <div class="complete-flash" id="completeFlash"></div>
 <div class="toast" id="toast"></div>
 
+<!-- GLOBAL TAB BAR (fixed, always visible) -->
+<div class="global-tab-bar" id="globalTabBar">
+  <div class="gtbi active" id="gtab-gigs" onclick="goTab('gigs')">GIGS</div>
+  <div class="gtbi" id="gtab-library" onclick="goTab('library')">LIBRARY</div>
+  <div class="gtbi" id="gtab-settings" onclick="goTab('settings')">SETTINGS</div>
+</div>
+
 <!-- DASHBOARD -->
 <div class="screen active" id="screenDash">
   <div class="app-header">
     <div class="brand">Gig Checklist</div>
   </div>
   <div class="dash-main" id="dashMain"></div>
-  <div class="tab-bar">
-    <div class="tbi active">GIGS</div>
-    <div class="tbi" onclick="goLibrary('templates')">LIBRARY</div>
-    <div class="tbi" onclick="goSettings()">SETTINGS</div>
-  </div>
 </div>
 
 <!-- NEW GIG -->
@@ -439,10 +446,12 @@ function getCat(id){return appState.categories.find(c=>c.id===id);}
 function getTpl(id){return appState.templates.find(t=>t.id===id);}
 
 // ═══ NAVIGATION ═══
+function setActiveTab(name){document.querySelectorAll('.gtbi').forEach(t=>t.classList.remove('active'));const el=document.getElementById('gtab-'+name);if(el)el.classList.add('active');}
+function goTab(name){if(name==='gigs'){showScreen('screenDash');setActiveTab('gigs');renderDashboard();}else if(name==='library'){goLibrary('templates');}else if(name==='settings'){goSettings();}}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
-function goBack(target){if(editingItem)commitEditItem();showScreen(target);if(target==='screenDash')renderDashboard();}
-function goNewGig(){selectedKitIds.clear();extraTasks=[];document.getElementById('newGigName').value='';document.getElementById('newGigDate').value=new Date().toISOString().slice(0,10);document.getElementById('newGigCallTime').value='';renderKitGrid();renderExtraTasks();updateBuildBar();showScreen('screenNewGig');setTimeout(()=>document.getElementById('newGigName').focus(),100);}
-function goLibrary(tab){libraryTab=tab||'templates';openLibId=null;renderLibraryScreen();showScreen('screenLibrary');}
+function goBack(target){if(editingItem)commitEditItem();showScreen(target);if(target==='screenDash'){setActiveTab('gigs');renderDashboard();}}
+function goNewGig(){selectedKitIds.clear();extraTasks=[];document.getElementById('newGigName').value='';document.getElementById('newGigDate').value=new Date().toISOString().slice(0,10);document.getElementById('newGigCallTime').value='';renderKitGrid();renderExtraTasks();updateBuildBar();showScreen('screenNewGig');setActiveTab('gigs');setTimeout(()=>document.getElementById('newGigName').focus(),100);}
+function goLibrary(tab){libraryTab=tab||'templates';openLibId=null;renderLibraryScreen();showScreen('screenLibrary');setActiveTab('library');}
 
 // ═══ DASHBOARD ═══
 function renderDashboard(){
@@ -845,7 +854,7 @@ document.getElementById('clGigNameInput').addEventListener('blur',commitGigName)
 document.getElementById('clGigNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')commitGigName();});
 
 // ═══ SETTINGS ═══
-function goSettings(){renderSettingsScreen();showScreen('screenSettings');}
+function goSettings(){renderSettingsScreen();showScreen('screenSettings');setActiveTab('settings');}
 function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,nightBeforeAlert:true,morningOfAlert:true});}
 function saveSettings(){saveState();}
 function renderSettingsScreen(){
@@ -887,7 +896,8 @@ function renderSettingsScreen(){
   <div class="settings-card">
     <div class="settings-row">
       <div class="settings-row-left">
-        <div class="settings-row-title">TYO Sound Checklist</div>
+        <div class="settings-row-title">Created By Matt Ritterpusch</div>
+        <a href="https://tyosound.com" target="_blank" style="font-size:13px;color:var(--blue);text-decoration:none;font-weight:500;">tyosound.com</a>
         <div class="settings-row-sub">Version 2.0 · Data stored locally on this device</div>
       </div>
     </div>
