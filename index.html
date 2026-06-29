@@ -311,7 +311,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
       <input class="date-field" id="newGigDate" type="date" onclick="try{this.showPicker();}catch(e){}">
     </div>
     <div class="field-group">
-      <label class="field-label">Templates · Multi-Select</label>
+      <label class="field-label">Packs · Multi-Select</label>
       <div class="kit-grid" id="kitGrid"></div>
     </div>
     <div class="field-group">
@@ -321,7 +321,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
     </div>
   </div>
   <div class="build-bar">
-    <div class="build-summary" id="buildSummary">No templates selected</div>
+    <div class="build-summary" id="buildSummary">No packs selected</div>
     <button class="build-btn" id="buildBtn" disabled onclick="buildGig()">Build Pack →</button>
   </div>
 </div>
@@ -553,9 +553,9 @@ function renderKitGrid(){
 function toggleKit(id){selectedKitIds.has(id)?selectedKitIds.delete(id):selectedKitIds.add(id);document.getElementById('kitcard_'+id)?.classList.toggle('selected',selectedKitIds.has(id));updateBuildBar();}
 function updateBuildBar(){
   const n=selectedKitIds.size;document.getElementById('buildBtn').disabled=n===0;
-  if(!n){document.getElementById('buildSummary').textContent='No templates selected';return;}
+  if(!n){document.getElementById('buildSummary').textContent='No packs selected';return;}
   const kits=[...selectedKitIds].reduce((a,id)=>a+(getTpl(id)?.categoryIds?.length||0),0);
-  document.getElementById('buildSummary').textContent=`${n} template${n>1?'s':''} · ${kits} kits`;
+  document.getElementById('buildSummary').textContent=`${n} pack${n>1?'s':''} · ${kits} kits`;
 }
 function renderExtraTasks(){document.getElementById('extraTasksList').innerHTML=extraTasks.map(t=>`<div class="extra-task-row" id="extrow_${t.id}"><input class="extra-task-text" placeholder="Task description…" value="${escHtml(t.text)}" oninput="updateExtraTask('${t.id}',this.value)"><button class="extra-task-remove" onclick="removeExtraTask('${t.id}')">${svgX()}</button></div>`).join('');}
 function addExtraTask(){const t={id:uid(),text:''};extraTasks.push(t);renderExtraTasks();document.querySelector(`#extrow_${t.id} input`)?.focus();}
@@ -604,12 +604,12 @@ function buildGig(){
 function renderLibraryScreen(){
   const isTpl=libraryTab==='templates';
   let html=`<div class="seg-ctrl">
-  <div class="seg-tab ${isTpl?'active':''}" onclick="switchLibTab('templates')">TEMPLATES</div>
+  <div class="seg-tab ${isTpl?'active':''}" onclick="switchLibTab('templates')">PACKS</div>
   <div class="seg-tab ${!isTpl?'active':''}" onclick="switchLibTab('kits')">KITS</div>
 </div>`;
   if(isTpl){
     html+=appState.templates.map(t=>renderLibTpl(t)).join('');
-    html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Template</button>`;
+    html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Pack</button>`;
   } else {
     html+=appState.categories.map(c=>renderLibKit(c)).join('');
     html+=`<button class="lib-add-btn" onclick="addCatLib()">${svgPlus(13)} New Kit</button>`;
@@ -718,9 +718,9 @@ function updateRoutineStep(catId,routineKey,idx,val){
 // template ops
 function addCatToTpl(tplId){const sel=document.getElementById('tplsel_'+tplId);if(!sel||!sel.value)return;const tpl=getTpl(tplId);if(!tpl)return;if(!(tpl.categoryIds||[]).includes(sel.value)){(tpl.categoryIds=tpl.categoryIds||[]).push(sel.value);}saveState();openLibId=tplId;renderLibraryScreen();}
 function removeCatFromTpl(tplId,catId){const tpl=getTpl(tplId);if(!tpl)return;tpl.categoryIds=(tpl.categoryIds||[]).filter(id=>id!==catId);saveState();openLibId=tplId;renderLibraryScreen();}
-function saveTpl(tplId){saveState();showToast('Template saved');}
+function saveTpl(tplId){saveState();showToast('Pack saved');}
 function deleteTpl(tplId){const btn=document.querySelector(`#libitem_${tplId} .lib-delete`);if(!btn)return;if(btn.dataset.c==='1'){appState.templates=appState.templates.filter(t=>t.id!==tplId);if(appState.templateOrder)appState.templateOrder=appState.templateOrder.filter(id=>id!==tplId);saveState();openLibId=null;renderLibraryScreen();}else{btn.dataset.c='1';btn.textContent='Confirm?';setTimeout(()=>{if(btn.dataset.c==='1'){btn.dataset.c='';btn.textContent='DELETE';}},3000);}}
-function addTemplate(){const t={id:uid(),name:'New Template',categoryIds:[]};appState.templates.push(t);if(appState.templateOrder)appState.templateOrder.push(t.id);saveState();openLibId=t.id;renderLibraryScreen();setTimeout(()=>beginRenameLibTpl(t.id),50);}
+function addTemplate(){const t={id:uid(),name:'New Pack',categoryIds:[]};appState.templates.push(t);if(appState.templateOrder)appState.templateOrder.push(t.id);saveState();openLibId=t.id;renderLibraryScreen();setTimeout(()=>beginRenameLibTpl(t.id),50);}
 
 // kit ops
 function renameCat(catId,val){const cat=getCat(catId);if(cat&&val.trim()){cat.title=val.trim();saveState();}}
