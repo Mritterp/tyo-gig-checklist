@@ -1213,12 +1213,12 @@ function renderSettingsScreen(){
       <button onclick="document.getElementById('csvFileInput').click()" style="background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">Import CSV</button>
       <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="importCSV(this)">
     </div>
-    <div class="settings-row" style="flex-direction:column;align-items:stretch;padding-top:8px;padding-bottom:${_importPanelOpen?'8':'0'}px;">
-      <span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderSettingsScreen()" style="font-size:13px;margin-bottom:${_importPanelOpen?'10':'0'}px;">
+    <div class="settings-row" style="flex-direction:column;align-items:stretch;padding-top:12px;padding-bottom:${_importPanelOpen?'12':'0'}px;">
+      <span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderSettingsScreen()" style="font-size:13px;margin-bottom:${_importPanelOpen?'12':'0'}px;">
         ${_importPanelOpen?'▾ Hide CSV guide':'▸ How to format your CSV'}
       </span>
       ${_importPanelOpen?`<div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
-        <div style="margin-bottom:8px;">Build a spreadsheet with these columns and save as <code style="background:var(--surface2);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px;">.csv</code>:</div>
+        <div style="margin-bottom:10px;">Build a spreadsheet with these columns and save as <code style="background:var(--surface2);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px;">.csv</code>:</div>
         <table class="import-col-table">
           <tr><td>Kit Name</td><td>Identical names will be combined into one kit.</td></tr>
           <tr><td>Packing</td><td>The kit item or step that will appear on the packing list</td></tr>
@@ -1226,7 +1226,23 @@ function renderSettingsScreen(){
           <tr><td>Teardown</td><td>The kit item or step that will appear on the teardown list</td></tr>
           <tr><td>Important</td><td>Any value — flags packing item as IMPORTANT</td></tr>
         </table>
-        <div style="margin-top:8px;">Blank cells are skipped. Existing kits are appended, not replaced.</div>
+        <div style="margin-top:10px;margin-bottom:10px;">Blank cells are skipped. Existing kits are appended, not replaced.</div>
+        <div style="margin-bottom:6px;font-weight:600;color:var(--text-dim);">Example:</div>
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:10.5px;white-space:nowrap;">
+          <tr style="background:var(--surface2);">
+            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Kit Name</th>
+            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Packing</th>
+            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Setup</th>
+            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Teardown</th>
+            <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Important</th>
+          </tr>
+          <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Lectrosonics RX × 2</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Place cart stage left</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Coil all cables</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">yes</td></tr>
+          <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Boom pole</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Power on receivers</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Bag all cables</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td></tr>
+          <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">IFB transmitter</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Set levels</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td></tr>
+          <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">IFB Kit</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Comtek TX</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Place on talent</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Collect from talent</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">yes</td></tr>
+        </table>
+        </div>
       </div>`:''}
     </div>
   </div>
