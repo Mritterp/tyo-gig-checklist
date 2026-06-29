@@ -326,6 +326,17 @@ body.text-xlarge .tpl-kit-name{font-size:18px;}
 body.text-xlarge .cl-gig-name{font-size:29px;}
 body.text-xlarge .settings-row-title{font-size:20px;}
 body.text-xlarge .settings-row-sub{font-size:17px;}
+/* CSV import panel */
+.import-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+.import-panel-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.5px;margin-bottom:8px;}
+.import-instructions{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:10px;}
+.import-instructions code{background:var(--surface2);border-radius:4px;padding:1px 5px;font-family:monospace;color:var(--text-dim);font-size:11px;}
+.import-col-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px;}
+.import-col-table th{text-align:left;color:var(--text-muted);font-weight:600;padding:3px 6px;border-bottom:1px solid var(--border);letter-spacing:.4px;}
+.import-col-table td{padding:3px 6px;color:var(--text-dim);vertical-align:top;}
+.import-col-table td:first-child{color:var(--blue);font-weight:600;white-space:nowrap;}
+.import-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.import-toggle{font-size:12px;color:var(--blue);cursor:pointer;margin-bottom:8px;display:inline-block;}
 /* Text size picker */
 .text-size-picker{display:flex;gap:8px;margin-top:2px;}
 .tsz-btn{flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text-muted);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
@@ -771,20 +782,96 @@ function buildGig(){
 }
 
 // ═══ LIBRARY ═══
+let _importPanelOpen=false;
 function renderLibraryScreen(){
   const isTpl=libraryTab==='templates';
   let html=`<div class="seg-ctrl">
   <div class="seg-tab ${isTpl?'active':''}" onclick="switchLibTab('templates')">PACKS</div>
   <div class="seg-tab ${!isTpl?'active':''}" onclick="switchLibTab('kits')">KITS</div>
 </div>`;
-  if(isTpl){
-    html+=appState.templates.map(t=>renderLibTpl(t)).join('');
-    html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Pack</button>`;
-  } else {
+  if(!isTpl){
+    html+=`<span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderLibraryScreen()">
+      ${_importPanelOpen?'▾ Hide import guide':'▸ Import from spreadsheet'}
+    </span>`;
+    if(_importPanelOpen){
+      html+=`<div class="import-panel">
+        <div class="import-panel-title">IMPORT FROM EXCEL / CSV</div>
+        <div class="import-instructions">
+          Build your kit list in Excel or Google Sheets using the columns below, then save as <code>.csv</code> (File → Save As → CSV). Each row is one item — leave a cell blank and that routine is skipped for that row.
+        </div>
+        <table class="import-col-table">
+          <tr><th>Column</th><th>What to put in it</th></tr>
+          <tr><td>Kit Name</td><td>Name of the kit (e.g. "Sound Cart"). Rows with the same name merge into one kit.</td></tr>
+          <tr><td>Item</td><td>The item or step text (e.g. "Lectrosonics RX × 2")</td></tr>
+          <tr><td>Packing</td><td>Any value (e.g. "x") — adds Item to the packing list</td></tr>
+          <tr><td>Setup</td><td>Any value — adds Item to the setup routine</td></tr>
+          <tr><td>Teardown</td><td>Any value — adds Item to the teardown routine</td></tr>
+          <tr><td>Important</td><td>Any value — flags the packing item as IMPORTANT</td></tr>
+        </table>
+        <div class="import-instructions" style="margin-bottom:12px;">
+          Existing kits with the same name will have new items <em>appended</em> — nothing is overwritten. Header row is skipped automatically.
+        </div>
+        <button class="import-btn" onclick="document.getElementById('csvFileInput').click()">
+          ↑ Choose CSV file
+        </button>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="importCSV(this)">
+      </div>`;
+    }
     html+=appState.categories.map(c=>renderLibKit(c)).join('');
     html+=`<button class="lib-add-btn" onclick="addCatLib()">${svgPlus(13)} New Kit</button>`;
+  } else {
+    html+=appState.templates.map(t=>renderLibTpl(t)).join('');
+    html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Pack</button>`;
   }
   document.getElementById('libMain').innerHTML=html;
+}
+function importCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const lines=e.target.result.split(/\r?\n/);
+    let kitsAdded=0,itemsAdded=0;
+    // skip header row
+    for(let i=1;i<lines.length;i++){
+      const cols=parseCSVRow(lines[i]);
+      if(cols.length<2)continue;
+      const kitName=(cols[0]||'').trim();
+      const itemText=(cols[1]||'').trim();
+      const doPacking=(cols[2]||'').trim();
+      const doSetup=(cols[3]||'').trim();
+      const doTeardown=(cols[4]||'').trim();
+      const doImportant=(cols[5]||'').trim();
+      if(!kitName||!itemText)continue;
+      let cat=appState.categories.find(c=>c.title.toLowerCase()===kitName.toLowerCase());
+      if(!cat){
+        cat={id:uid(),title:kitName,items:[],setup:[],teardown:[]};
+        appState.categories.push(cat);
+        kitsAdded++;
+      }
+      if(!cat.setup)cat.setup=[];
+      if(!cat.teardown)cat.teardown=[];
+      if(doPacking){cat.items.push({text:itemText,shared:!!doImportant});itemsAdded++;}
+      if(doSetup){cat.setup.push({text:itemText});itemsAdded++;}
+      if(doTeardown){cat.teardown.push({text:itemText});itemsAdded++;}
+    }
+    saveState();
+    input.value='';
+    libraryTab='kits';
+    renderLibraryScreen();
+    showToast(`Imported ${kitsAdded} kit${kitsAdded!==1?'s':''}, ${itemsAdded} item${itemsAdded!==1?'s':''}`);
+  };
+  reader.readAsText(file);
+}
+function parseCSVRow(row){
+  const cols=[];let cur='',inQ=false;
+  for(let i=0;i<row.length;i++){
+    const ch=row[i];
+    if(ch==='"'){if(inQ&&row[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===','&&!inQ){cols.push(cur);cur='';}
+    else cur+=ch;
+  }
+  cols.push(cur);
+  return cols;
 }
 function switchLibTab(tab){libraryTab=tab;openLibId=null;renderLibraryScreen();}
 
