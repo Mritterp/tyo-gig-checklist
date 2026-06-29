@@ -1120,7 +1120,7 @@ function renderSettingsScreen(){
   const s=getSettings();
   const notifSupported='Notification' in window;
   const notifStatus=notifSupported?Notification.permission:'unavailable';
-  const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked in your browser. Enable them in your browser settings to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
+  const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   document.getElementById('settingsMain').innerHTML=`
 <div class="settings-section">
   <div class="settings-section-label">Appearance</div>
