@@ -308,7 +308,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
     </div>
     <div class="field-group">
       <label class="field-label">Date</label>
-      <input class="date-field" id="newGigDate" type="date">
+      <input class="date-field" id="newGigDate" type="date" onclick="try{this.showPicker();}catch(e){}">
     </div>
     <div class="field-group">
       <label class="field-label">Templates · Multi-Select</label>
@@ -858,7 +858,7 @@ function findItem(itemId){const gig=getActiveGig();for(const p of gig.phases)for
 function findCat(catId){const gig=getActiveGig();for(const p of gig.phases){const c=p.categories.find(x=>x.id===catId);if(c)return c;}return null;}
 function replaceCategory(cat){const el=document.getElementById('cat_'+cat.id);if(el){const tmp=document.createElement('div');tmp.innerHTML=renderCategory(cat,activePhaseIdx);el.replaceWith(tmp.firstElementChild);}}
 
-function toggleKitCheck(catId){const cat=findCat(catId);if(!cat)return;const all=cat.items.every(i=>i.checked);cat.items.forEach(i=>i.checked=!all);cat.expanded=true;saveState();replaceCategory(cat);updateClProgress();}
+function toggleKitCheck(catId){const cat=findCat(catId);if(!cat)return;const all=cat.items.every(i=>i.checked);cat.items.forEach(i=>i.checked=!all);saveState();replaceCategory(cat);updateClProgress();}
 function toggleCatExpand(catId){const cat=findCat(catId);if(!cat)return;cat.expanded=cat.expanded===false;saveState();document.getElementById('catbody_'+catId)?.classList.toggle('open',cat.expanded!==false);const chev=document.querySelector(`#cat_${catId} .kit-chevron`);if(chev)chev.textContent=cat.expanded!==false?'‹':'›';}
 function toggleItem(id){if(_lpSuppressClick){_lpSuppressClick=false;return;}const f=findItem(id);if(!f)return;f.item.checked=!f.item.checked;saveState();replaceCategory(f.cat);updateClProgress();}
 function toggleShared(itemId){const f=findItem(itemId);if(!f)return;f.item.shared=!f.item.shared;saveState();replaceCategory(f.cat);}
