@@ -314,7 +314,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   #clMain.dt-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;}
   .dt-phase-col{border-right:1px solid var(--border);padding:16px 20px 32px;}
   .dt-phase-col:last-child{border-right:none;}
-  .dt-phase-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--green-border);display:flex;justify-content:space-between;align-items:center;}
+  .dt-phase-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
   .dt-phase-label .phase-stats{font-size:11px;font-weight:500;letter-spacing:0;color:var(--text-muted);}
   .dt-phase-actions{display:flex;gap:6px;margin-bottom:10px;}
   .lib-routines-dt{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
@@ -1251,7 +1251,7 @@ function renderPhaseContent(){
       const{done,total}=phaseProgress(phase);
       const pct=total?Math.round(done/total*100):0;
       html+=`<div class="dt-phase-col">
-        <div class="dt-phase-label">${phase.label.toUpperCase()}<span class="phase-stats ${pct===100?'complete':''}">${done}/${total}</span></div>
+        <div class="dt-phase-label" style="border-bottom-color:${pct===100?'var(--green)':pct>0?'var(--orange)':'var(--border)'}">${phase.label.toUpperCase()}<span class="phase-stats ${pct===100?'complete':''}">${done}/${total}</span></div>
         <div class="dt-phase-actions"><button class="sm-btn" onclick="resetPhase(${pi})">Reset</button><button class="sm-btn green" onclick="checkAllPhase(${pi})">Check All</button></div>`;
       if(pi===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up.</div>`;
       phase.categories.forEach(cat=>{html+=renderCategory(cat,pi);});
