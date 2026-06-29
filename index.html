@@ -314,7 +314,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   #clMain.dt-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;}
   .dt-phase-col{border-right:1px solid var(--border);padding:16px 20px 32px;}
   .dt-phase-col:last-child{border-right:none;}
-  .dt-phase-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .dt-phase-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+  .dt-phase-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:12px;}
+  .dt-phase-bar-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;}
   .dt-phase-label .phase-stats{font-size:11px;font-weight:500;letter-spacing:0;color:var(--text-muted);}
   .dt-phase-actions{display:flex;gap:6px;margin-bottom:10px;}
   .lib-routines-dt{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
@@ -1239,6 +1241,18 @@ function updateClProgress(){
   const wasFull=parseFloat(fill.style.width||0)===100;
   fill.style.width=pct+'%';
   if(pct===100&&!wasFull){fill.classList.add('flash');fill.addEventListener('animationend',()=>fill.classList.remove('flash'),{once:true});const f=document.getElementById('completeFlash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),800);}
+  if(isWide()){
+    gig.phases.forEach((ph,pi)=>{
+      const{done:d,total:t}=phaseProgress(ph);
+      const p=t?Math.round(d/t*100):0;
+      const bar=document.getElementById('dtbar_'+pi);
+      if(!bar)return;
+      bar.style.width=p+'%';
+      bar.style.background=p===100?'var(--green)':p>0?'var(--orange)':'transparent';
+      const lbl=bar.closest('.dt-phase-col')?.querySelector('.phase-stats');
+      if(lbl){lbl.textContent=d+'/'+t;lbl.className='phase-stats'+(p===100?' complete':'');}
+    });
+  }
 }
 function renderPhaseContent(){
   const gig=getActiveGig();if(!gig)return;
@@ -1251,7 +1265,8 @@ function renderPhaseContent(){
       const{done,total}=phaseProgress(phase);
       const pct=total?Math.round(done/total*100):0;
       html+=`<div class="dt-phase-col">
-        <div class="dt-phase-label" style="border-bottom-color:${pct===100?'var(--green)':pct>0?'var(--orange)':'var(--border)'}">${phase.label.toUpperCase()}<span class="phase-stats ${pct===100?'complete':''}">${done}/${total}</span></div>
+        <div class="dt-phase-label">${phase.label.toUpperCase()}<span class="phase-stats ${pct===100?'complete':''}">${done}/${total}</span></div>
+        <div class="dt-phase-bar"><div class="dt-phase-bar-fill" id="dtbar_${pi}" style="width:${pct}%;background:${pct===100?'var(--green)':pct>0?'var(--orange)':'transparent'}"></div></div>
         <div class="dt-phase-actions"><button class="sm-btn" onclick="resetPhase(${pi})">Reset</button><button class="sm-btn green" onclick="checkAllPhase(${pi})">Check All</button></div>`;
       if(pi===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up.</div>`;
       phase.categories.forEach(cat=>{html+=renderCategory(cat,pi);});
