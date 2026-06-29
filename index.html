@@ -698,7 +698,7 @@ function renderLibKit(cat){
         <span class="drag-handle">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
-        <span class="kit-shared-label ${item.shared?'on':'off'}">IMPORTANT / DOUBLE CHECK</span>
+        <span class="kit-shared-label ${item.shared?'on':'off'}">IMPORTANT</span>
         <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
         <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
       </div>`).join('')}
