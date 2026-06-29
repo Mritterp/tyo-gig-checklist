@@ -1228,7 +1228,7 @@ function renderSettingsScreen(){
         </table>
         <div style="margin-top:10px;margin-bottom:10px;">Blank cells are skipped. Existing kits are appended, not replaced.</div>
         <div style="margin-bottom:6px;font-weight:600;color:var(--text-dim);">Example:</div>
-        <div style="overflow-x:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-x;">
+        <div id="csvExampleScroll" style="overflow-x:scroll;-webkit-overflow-scrolling:touch;cursor:grab;">
         <table style="width:100%;border-collapse:collapse;font-size:10.5px;white-space:nowrap;">
           <tr style="background:var(--surface2);">
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Kit Name</th>
@@ -1259,6 +1259,14 @@ function renderSettingsScreen(){
     </div>
   </div>
 </div>`;
+  if(_importPanelOpen) setTimeout(()=>{
+    const el=document.getElementById('csvExampleScroll');
+    if(!el)return;
+    let down=false,startX=0,scrollLeft=0;
+    el.addEventListener('mousedown',e=>{down=true;startX=e.pageX-el.offsetLeft;scrollLeft=el.scrollLeft;el.style.cursor='grabbing';e.preventDefault();});
+    window.addEventListener('mouseup',()=>{down=false;el.style.cursor='grab';});
+    el.addEventListener('mousemove',e=>{if(!down)return;el.scrollLeft=scrollLeft-(e.pageX-el.offsetLeft-startX);});
+  },0);
 }
 function exportLibrary(){
   const data={version:1,exported:new Date().toISOString(),categories:appState.categories,templates:appState.templates,templateOrder:appState.templateOrder};
