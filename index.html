@@ -546,6 +546,14 @@ function orderedTemplates(){
 }
 // Pointer-based drag (works on touch + mouse)
 let _tplDrag=null;
+function _cardAtPoint(x,y,excludeId){
+  for(const c of document.querySelectorAll('.kit-card')){
+    if(c.id==='kitcard_'+excludeId)continue;
+    const r=c.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)return c;
+  }
+  return null;
+}
 function startTplDrag(e,id){
   e.preventDefault();e.stopPropagation();
   const card=document.getElementById('kitcard_'+id);if(!card)return;
@@ -554,44 +562,42 @@ function startTplDrag(e,id){
   ghost.removeAttribute('id');
   ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);border-radius:10px;`;
   document.body.appendChild(ghost);
-  card.classList.add('dragging');
-  _tplDrag={id,ghost,card,ox:e.clientX-rect.left,oy:e.clientY-rect.top,overId:null,moved:false};
-  try{e.target.setPointerCapture(e.pointerId);}catch(_){}
+  card.style.opacity='0.35';
+  _tplDrag={id,ghost,card,ox:e.clientX-rect.left,oy:e.clientY-rect.top,lastX:e.clientX,lastY:e.clientY};
   document.addEventListener('pointermove',_onTplMove,{passive:false});
   document.addEventListener('pointerup',_onTplUp);
-  document.addEventListener('pointercancel',_onTplUp);
+  document.addEventListener('pointercancel',_onTplCancel);
 }
 function _onTplMove(e){
-  if(!_tplDrag)return;e.preventDefault();
-  _tplDrag.moved=true;
+  if(!_tplDrag)return;
+  e.preventDefault();
+  _tplDrag.lastX=e.clientX;_tplDrag.lastY=e.clientY;
   _tplDrag.ghost.style.left=(e.clientX-_tplDrag.ox)+'px';
   _tplDrag.ghost.style.top=(e.clientY-_tplDrag.oy)+'px';
-  _tplDrag.ghost.style.display='none';
-  const el=document.elementFromPoint(e.clientX,e.clientY);
-  _tplDrag.ghost.style.display='';
-  const overCard=el?.closest('.kit-card');
-  const overId=overCard?.id?.replace('kitcard_','');
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
-  if(overId&&overId!==_tplDrag.id){overCard.classList.add('drag-over');_tplDrag.overId=overId;}else{_tplDrag.overId=null;}
+  _cardAtPoint(e.clientX,e.clientY,_tplDrag.id)?.classList.add('drag-over');
 }
-function _onTplUp(e){
+function _onTplCancel(){
   if(!_tplDrag)return;
-  const{id,ghost,card}=_tplDrag;
-  // Hide ghost so elementFromPoint sees the card underneath
-  ghost.style.display='none';
-  let dropId=null;
-  if(e&&e.clientX!=null){
-    const el=document.elementFromPoint(e.clientX,e.clientY);
-    dropId=el?.closest('.kit-card')?.id?.replace('kitcard_','');
-  }
-  if(!dropId)dropId=_tplDrag.overId;
-  ghost.remove();card.classList.remove('dragging');
+  _tplDrag.ghost.remove();_tplDrag.card.style.opacity='';
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   document.removeEventListener('pointermove',_onTplMove);
   document.removeEventListener('pointerup',_onTplUp);
-  document.removeEventListener('pointercancel',_onTplUp);
+  document.removeEventListener('pointercancel',_onTplCancel);
   _tplDrag=null;
-  if(dropId&&dropId!==id){
+}
+function _onTplUp(e){
+  if(!_tplDrag)return;
+  const{id,ghost,card,lastX,lastY}=_tplDrag;
+  const x=e?.clientX??lastX,y=e?.clientY??lastY;
+  ghost.remove();card.style.opacity='';
+  document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onTplMove);
+  document.removeEventListener('pointerup',_onTplUp);
+  document.removeEventListener('pointercancel',_onTplCancel);
+  _tplDrag=null;
+  const dropId=_cardAtPoint(x,y,id)?.id?.replace('kitcard_','');
+  if(dropId){
     const order=appState.templateOrder||appState.templates.map(t=>t.id);
     const fi=order.indexOf(id),ti=order.indexOf(dropId);
     if(fi!==-1&&ti!==-1){order.splice(fi,1);order.splice(ti,0,id);appState.templateOrder=order;saveState();renderKitGrid();}
