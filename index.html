@@ -283,6 +283,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   .app-header,.dash-main,.form-main,.cl-main,.lib-main{padding-left:16px;padding-right:16px;}
   .cl-header{padding-left:16px;padding-right:16px;}
 }
+/* Rail panels (hidden on mobile, shown on desktop) */
+.dt-gig-rail,.dt-lib-rail{display:none;}
 /* Sidebar base (hidden on mobile, shown via media query below) */
 #sidebar{display:none;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:208px;background:var(--surface);border-right:1px solid var(--border);z-index:100;padding:20px 0;}
 .sb-brand{font-family:Georgia,'Times New Roman',serif;font-size:20px;color:var(--text);padding:0 22px 24px;border-bottom:1px solid var(--border);margin-bottom:8px;}
@@ -316,6 +318,31 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
   .lib-routine-col:last-child{border-right:none;}
   .lib-routine-col-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--green-border);}
   .kit-routine-tabs{display:none;}
+  /* Gig list rail */
+  #screenChecklist{display:flex;flex-direction:row;height:100vh;overflow:hidden;}
+  .dt-gig-rail{display:flex;flex-direction:column;width:222px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg);padding:16px 0;}
+  .cl-content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+  .gig-rail-label{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--text-muted);padding:0 18px 12px;}
+  .gig-rail-item{padding:12px 18px;border-left:3px solid transparent;cursor:pointer;user-select:none;}
+  .gig-rail-item.active{border-left-color:var(--blue);background:var(--blue-dim);}
+  .gig-rail-item:not(.active):hover{background:var(--surface);}
+  .gig-rail-name{font-size:15px;color:var(--text);margin-bottom:3px;}
+  .gig-rail-item.active .gig-rail-name{color:var(--blue);}
+  .gig-rail-meta{font-size:11px;color:var(--text-muted);}
+  .gig-rail-bar{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-top:6px;}
+  .gig-rail-bar-fill{height:100%;border-radius:2px;}
+  /* Library kit rail */
+  #screenLibrary{display:flex;flex-direction:row;height:100vh;overflow:hidden;}
+  .dt-lib-rail{display:flex;flex-direction:column;width:230px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg);padding:16px 0;}
+  #libMain{flex:1;overflow-y:auto;min-width:0;}
+  .lib-rail-seg{display:flex;gap:4px;margin:0 14px 14px;background:var(--surface3);border-radius:9px;padding:3px;}
+  .lib-rail-seg-tab{flex:1;text-align:center;padding:7px;border-radius:7px;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-muted);cursor:pointer;user-select:none;}
+  .lib-rail-seg-tab.active{background:var(--surface);color:var(--text);}
+  .lib-rail-item{padding:11px 18px;border-left:3px solid transparent;cursor:pointer;user-select:none;font-size:14px;font-weight:600;color:var(--text-muted);}
+  .lib-rail-item.active{border-left-color:var(--green);background:var(--green-dim);color:var(--text);}
+  .lib-rail-item:not(.active):hover{background:var(--surface);}
+  .lib-rail-add{margin:10px 14px 0;border-radius:8px;border:1.5px dashed var(--border2);text-align:center;padding:10px;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;user-select:none;}
+  .lib-rail-add:hover{background:var(--surface);}
 }
 /* Dark mode */
 body.dark{
@@ -444,6 +471,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
     <div class="brand" style="font-size:18px">Library</div>
     <div style="width:40px"></div>
   </div>
+  <div class="dt-lib-rail" id="libRail"></div>
   <div class="lib-main" id="libMain"></div>
 </div>
 
@@ -459,21 +487,24 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 
 <!-- CHECKLIST -->
 <div class="screen" id="screenChecklist">
-  <div class="cl-header">
-    <div class="cl-top-row cl-back-row">
-      <button class="cl-back" onclick="goBack('screenDash')">← All gigs</button>
-      <span class="cl-date" id="clGigDate"></span>
+  <div class="dt-gig-rail" id="gigRail"></div>
+  <div class="cl-content">
+    <div class="cl-header">
+      <div class="cl-top-row cl-back-row">
+        <button class="cl-back" onclick="goBack('screenDash')">← All gigs</button>
+        <span class="cl-date" id="clGigDate"></span>
+      </div>
+      <div class="cl-gig-name" id="clGigName">Gig</div>
+      <input class="cl-gig-name-input" id="clGigNameInput" style="display:none">
+      <div class="phase-tabs" id="phaseTabs"></div>
+      <div class="cl-progress-row">
+        <span id="clProgressLabel"></span>
+        <span class="cl-progress-pct" id="clProgressPct"></span>
+      </div>
+      <div class="cl-progress-bar"><div class="cl-progress-fill" id="progressFill"></div></div>
     </div>
-    <div class="cl-gig-name" id="clGigName">Gig</div>
-    <input class="cl-gig-name-input" id="clGigNameInput" style="display:none">
-    <div class="phase-tabs" id="phaseTabs"></div>
-    <div class="cl-progress-row">
-      <span id="clProgressLabel"></span>
-      <span class="cl-progress-pct" id="clProgressPct"></span>
-    </div>
-    <div class="cl-progress-bar"><div class="cl-progress-fill" id="progressFill"></div></div>
+    <div class="cl-main" id="clMain"></div>
   </div>
-  <div class="cl-main" id="clMain"></div>
 </div>
 
 <script>
@@ -832,18 +863,49 @@ function buildGig(){
 
 // ═══ LIBRARY ═══
 let _importPanelOpen=false;
-function renderLibraryScreen(){
+function renderLibRail(){
   const isTpl=libraryTab==='templates';
-  let html=`<div class="seg-ctrl">
+  const list=isTpl?appState.templates:appState.categories;
+  let html=`<div class="lib-rail-seg">
+    <div class="lib-rail-seg-tab${isTpl?' active':''}" onclick="switchLibTab('templates')">PACKS</div>
+    <div class="lib-rail-seg-tab${!isTpl?' active':''}" onclick="switchLibTab('kits')">KITS</div>
+  </div>`;
+  list.forEach(item=>{
+    const active=openLibId===item.id;
+    html+=`<div class="lib-rail-item${active?' active':''}" onclick="toggleLibItem('${item.id}')">${escHtml(item.name||item.title)}</div>`;
+  });
+  if(isTpl){
+    html+=`<div class="lib-rail-add" onclick="addTemplate()">+ New Pack</div>`;
+  } else {
+    html+=`<div class="lib-rail-add" onclick="addCatLib()">+ New Kit</div>`;
+  }
+  document.getElementById('libRail').innerHTML=html;
+}
+function renderLibraryScreen(){
+  if(isWide())renderLibRail();
+  const isTpl=libraryTab==='templates';
+  let html=isWide()?'':`<div class="seg-ctrl">
   <div class="seg-tab ${isTpl?'active':''}" onclick="switchLibTab('templates')">PACKS</div>
   <div class="seg-tab ${!isTpl?'active':''}" onclick="switchLibTab('kits')">KITS</div>
 </div>`;
-  if(isTpl){
+  if(isWide()&&openLibId){
+    // Desktop detail view: render only the open item
+    if(isTpl){
+      const tpl=appState.templates.find(t=>t.id===openLibId);
+      if(tpl)html+=renderLibTpl(tpl);
+    } else {
+      const cat=appState.categories.find(c=>c.id===openLibId);
+      if(cat)html+=renderLibKit(cat);
+    }
+  } else if(isTpl){
     html+=appState.templates.map(t=>renderLibTpl(t)).join('');
-    html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Pack</button>`;
+    if(!isWide())html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Pack</button>`;
   } else {
     html+=appState.categories.map(c=>renderLibKit(c)).join('');
-    html+=`<button class="lib-add-btn" onclick="addCatLib()">${svgPlus(13)} New Kit</button>`;
+    if(!isWide())html+=`<button class="lib-add-btn" onclick="addCatLib()">${svgPlus(13)} New Kit</button>`;
+  }
+  if(isWide()&&!openLibId){
+    html=`<div style="padding:40px 36px;color:var(--text-muted);font-size:14px">Select a kit or pack from the list to edit.</div>`;
   }
   document.getElementById('libMain').innerHTML=html;
 }
@@ -1089,7 +1151,25 @@ function renderChecklistScreen(){
   const ds=gig.date?new Date(gig.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
   document.getElementById('clGigDate').textContent=ds;
   document.getElementById('phaseTabs').innerHTML=gig.phases.map((p,i)=>`<div class="phase-tab ${i===activePhaseIdx?'active':''}" onclick="switchPhase(${i})">${p.label.toUpperCase()}</div>`).join('');
+  if(isWide())renderGigRail();
   renderPhaseContent();
+}
+function renderGigRail(){
+  const gigs=appState.gigs;
+  let html=`<div class="gig-rail-label">YOUR GIGS</div>`;
+  gigs.forEach(g=>{
+    const active=g.id===activeGigId;
+    const ds=g.date?new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+    const done=gigKitsDone(g),total=totalKits(g);
+    const pct=total?Math.round(done/total*100):0;
+    const barColor=pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)';
+    html+=`<div class="gig-rail-item${active?' active':''}" onclick="openGig('${g.id}')">
+      <div class="gig-rail-name">${escHtml(g.name)}</div>
+      <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' kits':''}</div>
+      ${total?`<div class="gig-rail-bar"><div class="gig-rail-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>`:''}
+    </div>`;
+  });
+  document.getElementById('gigRail').innerHTML=html;
 }
 function switchPhase(idx){if(editingItem)commitEditItem();activePhaseIdx=idx;document.querySelectorAll('#phaseTabs .phase-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));renderPhaseContent();}
 
