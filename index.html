@@ -195,7 +195,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .cl-progress-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text);margin-bottom:6px;}
 .cl-progress-pct{color:var(--text-muted);}
 .cl-progress-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:10px;}
-.cl-progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.cl-progress-fill{height:100%;background:var(--orange);border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1),background .3s;}
 @keyframes pulseComplete{0%,100%{opacity:1}50%{opacity:.4}}
 .cl-progress-fill.flash{animation:pulseComplete .5s ease-in-out 2;}
 
@@ -500,7 +500,10 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
         <button class="cl-back" onclick="goBack('screenDash')">← All gigs</button>
         <span class="cl-date" id="clGigDate"></span>
       </div>
-      <div class="cl-gig-name" id="clGigName">Gig</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="cl-gig-name" id="clGigName" style="margin-bottom:0">Gig</div>
+        <div id="clPhaseDots" class="gig-phase-dots"></div>
+      </div>
       <input class="cl-gig-name-input" id="clGigNameInput" style="display:none">
       <div class="phase-tabs" id="phaseTabs"></div>
       <div class="cl-progress-row">
@@ -641,9 +644,8 @@ function renderDashboard(){
       const ds=g.date?new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
       const tn=(g.kitIds||[]).map(id=>getTpl(id)?.name).filter(Boolean).join(' + ');
       const meta=[ds,tn].filter(Boolean).join(' · ');
-      const pd=phasesDone(g);
       const labels=['P','S','W'];
-      const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>`<div class="gig-phase-dot${pd[i]?' done':''}">${l}</div>`).join('')}</div>`;
+      const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>{const ph=g.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p)}">${l}</div>`;}).join('')}</div>`;
       html+=`<div class="gig-card" onclick="openGig('${g.id}')">
   <button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${g.id}')">${svgX(11)}</button>
   <div class="gig-card-row1">
@@ -1175,8 +1177,7 @@ function renderGigRail(){
     const done=gigKitsDone(g),total=totalKits(g);
     const pct=total?Math.round(done/total*100):0;
     const barColor=pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)';
-    const pd=phasesDone(g);
-    const railDots=['P','S','W'].map((l,i)=>`<div class="gig-phase-dot${pd[i]?' done':''}" style="width:14px;height:14px;font-size:7px">${l}</div>`).join('');
+    const railDots=['P','S','W'].map((l,i)=>{const ph=g.phases?.[i];const{done:rd,total:rt}=ph?phaseProgress(ph):{done:0,total:0};const rp=rt?Math.round(rd/rt*100):0;return`<div class="gig-phase-dot" style="width:14px;height:14px;font-size:7px;${phaseDotStyle(rp)}">${l}</div>`;}).join('');
     html+=`<div class="gig-rail-item${active?' active':''}" onclick="openGig('${g.id}')">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div class="gig-phase-dots">${railDots}</div><div class="gig-rail-name" style="margin-bottom:0">${escHtml(g.name)}</div></div>
       <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' kits':''}</div>
@@ -1230,29 +1231,47 @@ function renderItem(item,showShared){
   </div>
 </div>`;
 }
+function phaseDotStyle(pct){
+  if(pct===100)return'background:var(--green);border-color:var(--green);color:#fff';
+  if(pct>0)return'background:var(--orange);border-color:var(--orange);color:#fff';
+  return'';
+}
 function updateClProgress(){
   const gig=getActiveGig();if(!gig)return;
-  const phase=gig.phases[activePhaseIdx];
-  const{done,total}=phaseProgress(phase);const pct=total?Math.round(done/total*100):0;
-  const kd=phase.categories.filter(c=>c.items.length&&c.items.every(i=>i.checked)).length;
-  document.getElementById('clProgressLabel').innerHTML=`<b>${kd} / ${phase.categories.length} kits</b> · ${done} / ${total} items`;
-  document.getElementById('clProgressPct').textContent=pct+'%';
-  const fill=document.getElementById('progressFill');if(!fill)return;
-  const wasFull=parseFloat(fill.style.width||0)===100;
-  fill.style.width=pct+'%';
-  if(pct===100&&!wasFull){fill.classList.add('flash');fill.addEventListener('animationend',()=>fill.classList.remove('flash'),{once:true});const f=document.getElementById('completeFlash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),800);}
-  if(isWide()){
-    gig.phases.forEach((ph,pi)=>{
-      const{done:d,total:t}=phaseProgress(ph);
-      const p=t?Math.round(d/t*100):0;
-      const bar=document.getElementById('dtbar_'+pi);
-      if(!bar)return;
-      bar.style.width=p+'%';
-      bar.style.background=p===100?'var(--green)':p>0?'var(--orange)':'transparent';
-      const lbl=bar.closest('.dt-phase-col')?.querySelector('.phase-stats');
-      if(lbl){lbl.textContent=d+'/'+t;lbl.className='phase-stats'+(p===100?' complete':'');}
-    });
+  const labels=['P','S','W'];
+  // Per-phase data
+  const phases=gig.phases.map((ph,pi)=>{
+    const{done,total}=phaseProgress(ph);
+    const pct=total?Math.round(done/total*100):0;
+    return{ph,pi,done,total,pct};
+  });
+  // Mobile active-phase bar
+  const active=phases[activePhaseIdx]||phases[0];
+  const kd=active.ph.categories.filter(c=>c.items.length&&c.items.every(i=>i.checked)).length;
+  document.getElementById('clProgressLabel').innerHTML=`<b>${kd} / ${active.ph.categories.length} kits</b> · ${active.done} / ${active.total} items`;
+  document.getElementById('clProgressPct').textContent=active.pct+'%';
+  const fill=document.getElementById('progressFill');
+  if(fill){
+    const wasFull=parseFloat(fill.style.width||0)>=100;
+    fill.style.width=active.pct+'%';
+    fill.style.background=active.pct===100?'var(--green)':'var(--orange)';
+    if(active.pct===100&&!wasFull){fill.classList.add('flash');fill.addEventListener('animationend',()=>fill.classList.remove('flash'),{once:true});const f=document.getElementById('completeFlash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),800);}
   }
+  // Mobile P/S/W dots in header
+  const mobileDots=document.getElementById('clPhaseDots');
+  if(mobileDots)mobileDots.innerHTML=labels.map((l,i)=>{const p=phases[i]?.pct||0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p)}">${l}</div>`;}).join('');
+  // Desktop column bars + stats + rail dots — all phases every time
+  phases.forEach(({pi,done,total,pct})=>{
+    const bar=document.getElementById('dtbar_'+pi);
+    if(bar){bar.style.width=pct+'%';bar.style.background=pct===100?'var(--green)':pct>0?'var(--orange)':'transparent';}
+    const lbl=bar?.closest('.dt-phase-col')?.querySelector('.phase-stats');
+    if(lbl){lbl.textContent=done+'/'+total;lbl.className='phase-stats'+(pct===100?' complete':'');}
+  });
+  // Rail dots for active gig
+  document.querySelectorAll('#gigRail .gig-phase-dot').forEach((dot,i)=>{
+    if(i>=phases.length)return;
+    dot.setAttribute('style',phaseDotStyle(phases[i].pct));
+  });
 }
 function renderPhaseContent(){
   const gig=getActiveGig();if(!gig)return;
