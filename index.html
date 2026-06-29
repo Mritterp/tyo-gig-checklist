@@ -304,16 +304,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
       <input class="text-field" id="newGigName" placeholder="Client name, location…" maxlength="80" autocomplete="off">
     </div>
     <div class="field-group">
-      <div class="date-row">
-        <div>
-          <label class="field-label">Date</label>
-          <input class="date-field" id="newGigDate" type="date">
-        </div>
-        <div>
-          <label class="field-label orange">Call Time</label>
-          <input class="call-field" id="newGigCallTime" type="time">
-        </div>
-      </div>
+      <label class="field-label">Date</label>
+      <input class="date-field" id="newGigDate" type="date">
     </div>
     <div class="field-group">
       <label class="field-label">Templates · Multi-Select</label>
@@ -450,7 +442,7 @@ function setActiveTab(name){document.querySelectorAll('.gtbi').forEach(t=>t.clas
 function goTab(name){if(name==='gigs'){showScreen('screenDash');setActiveTab('gigs');renderDashboard();}else if(name==='library'){goLibrary('templates');}else if(name==='settings'){goSettings();}}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 function goBack(target){if(editingItem)commitEditItem();showScreen(target);if(target==='screenDash'){setActiveTab('gigs');renderDashboard();}}
-function goNewGig(){selectedKitIds.clear();extraTasks=[];document.getElementById('newGigName').value='';document.getElementById('newGigDate').value=new Date().toISOString().slice(0,10);document.getElementById('newGigCallTime').value='';renderKitGrid();renderExtraTasks();updateBuildBar();showScreen('screenNewGig');setActiveTab('gigs');setTimeout(()=>document.getElementById('newGigName').focus(),100);}
+function goNewGig(){selectedKitIds.clear();extraTasks=[];document.getElementById('newGigName').value='';document.getElementById('newGigDate').value=new Date().toISOString().slice(0,10);renderKitGrid();renderExtraTasks();updateBuildBar();showScreen('screenNewGig');setActiveTab('gigs');setTimeout(()=>document.getElementById('newGigName').focus(),100);}
 function goLibrary(tab){libraryTab=tab||'templates';openLibId=null;renderLibraryScreen();showScreen('screenLibrary');setActiveTab('library');}
 
 // ═══ DASHBOARD ═══
@@ -467,9 +459,8 @@ function renderDashboard(){
   let html='';
   if(upNext){
     const kd=gigKitsDone(upNext),kt=totalKits(upNext),pct=kt?Math.round(kd/kt*100):0;
-    const callStr=upNext.callTime?formatTime(upNext.callTime):'';
     const dl=upNext.date?dayLabel(upNext.date):'';
-    const sub=[dl,callStr?callStr+' CALL':''].filter(Boolean).join(' · ');
+    const sub=dl;
     html+=`<div class="section-label orange">Up Next</div>
 <div class="up-next-card" onclick="openGig('${upNext.id}')">
   <div class="up-next-header"><div class="up-next-name">${escHtml(upNext.name)}</div><span style="color:var(--text-muted);font-size:18px">›</span></div>
@@ -538,7 +529,7 @@ function removeExtraTask(id){extraTasks=extraTasks.filter(t=>t.id!==id);renderEx
 function buildGig(){
   const name=document.getElementById('newGigName').value.trim()||'Untitled Gig';
   const date=document.getElementById('newGigDate').value;
-  const callTime=document.getElementById('newGigCallTime').value;
+  const callTime='';
   const seen=new Set(),packing=[];
   [...selectedKitIds].forEach(tplId=>{
     const tpl=getTpl(tplId);if(!tpl)return;
@@ -753,8 +744,7 @@ function renderChecklistScreen(){
   const gig=getActiveGig();if(!gig)return;
   document.getElementById('clGigName').textContent=gig.name;
   const ds=gig.date?new Date(gig.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
-  const cs=gig.callTime?formatTime(gig.callTime):'';
-  document.getElementById('clGigDate').textContent=[ds,cs].filter(Boolean).join(' · ');
+  document.getElementById('clGigDate').textContent=ds;
   document.getElementById('phaseTabs').innerHTML=gig.phases.map((p,i)=>`<div class="phase-tab ${i===activePhaseIdx?'active':''}" onclick="switchPhase(${i})">${p.label.toUpperCase()}</div>`).join('');
   renderPhaseContent();
 }
@@ -855,7 +845,7 @@ document.getElementById('clGigNameInput').addEventListener('keydown',e=>{if(e.ke
 
 // ═══ SETTINGS ═══
 function goSettings(){renderSettingsScreen();showScreen('screenSettings');setActiveTab('settings');}
-function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,nightBeforeAlert:true,morningOfAlert:true});}
+function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,twoDaysBeforeAlert:true,nightBeforeAlert:true});}
 function saveSettings(){saveState();}
 function renderSettingsScreen(){
   const s=getSettings();
@@ -875,21 +865,21 @@ function renderSettingsScreen(){
     </div>
     <div class="settings-row" style="${s.remindersEnabled?'':'opacity:.4;pointer-events:none'}">
       <div class="settings-row-left">
-        <div class="settings-row-title">Night Before</div>
-        <div class="settings-row-sub">Reminder the evening before your call time to finish packing</div>
+        <div class="settings-row-title">2 Days Before</div>
+        <div class="settings-row-sub">Reminder two days before your gig date to start packing</div>
       </div>
-      <button class="settings-toggle ${s.nightBeforeAlert?'on':''}" onclick="toggleSetting('nightBeforeAlert')"><span class="st-dot"></span></button>
+      <button class="settings-toggle ${s.twoDaysBeforeAlert?'on':''}" onclick="toggleSetting('twoDaysBeforeAlert')"><span class="st-dot"></span></button>
     </div>
     <div class="settings-row" style="${s.remindersEnabled?'':'opacity:.4;pointer-events:none'}">
       <div class="settings-row-left">
-        <div class="settings-row-title">Morning Of</div>
-        <div class="settings-row-sub">Alert on the day of your gig when you open the app</div>
+        <div class="settings-row-title">Night Before</div>
+        <div class="settings-row-sub">Reminder the evening before your gig date to finish packing</div>
       </div>
-      <button class="settings-toggle ${s.morningOfAlert?'on':''}" onclick="toggleSetting('morningOfAlert')"><span class="st-dot"></span></button>
+      <button class="settings-toggle ${s.nightBeforeAlert?'on':''}" onclick="toggleSetting('nightBeforeAlert')"><span class="st-dot"></span></button>
     </div>
   </div>
   ${permWarning}
-  <p class="settings-note">Reminders fire based on the call time you set when creating a gig. No call time = no reminder.</p>
+  <p class="settings-note">Reminders are scheduled based on the date you set when creating a gig. No date = no reminder.</p>
 </div>
 <div class="settings-section">
   <div class="settings-section-label">About</div>
