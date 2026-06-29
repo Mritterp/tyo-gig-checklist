@@ -789,39 +789,12 @@ function renderLibraryScreen(){
   <div class="seg-tab ${isTpl?'active':''}" onclick="switchLibTab('templates')">PACKS</div>
   <div class="seg-tab ${!isTpl?'active':''}" onclick="switchLibTab('kits')">KITS</div>
 </div>`;
-  if(!isTpl){
-    html+=`<span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderLibraryScreen()">
-      ${_importPanelOpen?'▾ Hide import guide':'▸ Import from spreadsheet'}
-    </span>`;
-    if(_importPanelOpen){
-      html+=`<div class="import-panel">
-        <div class="import-panel-title">IMPORT FROM EXCEL / CSV</div>
-        <div class="import-instructions">
-          Build your kit list in Excel or Google Sheets using the columns below, then save as <code>.csv</code> (File → Save As → CSV). Each row is one item — leave a cell blank and that routine is skipped for that row.
-        </div>
-        <table class="import-col-table">
-          <tr><th>Column</th><th>What to put in it</th></tr>
-          <tr><td>Kit Name</td><td>Name of the kit (e.g. "Sound Cart"). Rows with the same name merge into one kit.</td></tr>
-          <tr><td>Item</td><td>The item or step text (e.g. "Lectrosonics RX × 2")</td></tr>
-          <tr><td>Packing</td><td>Any value (e.g. "x") — adds Item to the packing list</td></tr>
-          <tr><td>Setup</td><td>Any value — adds Item to the setup routine</td></tr>
-          <tr><td>Teardown</td><td>Any value — adds Item to the teardown routine</td></tr>
-          <tr><td>Important</td><td>Any value — flags the packing item as IMPORTANT</td></tr>
-        </table>
-        <div class="import-instructions" style="margin-bottom:12px;">
-          Existing kits with the same name will have new items <em>appended</em> — nothing is overwritten. Header row is skipped automatically.
-        </div>
-        <button class="import-btn" onclick="document.getElementById('csvFileInput').click()">
-          ↑ Choose CSV file
-        </button>
-        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="importCSV(this)">
-      </div>`;
-    }
-    html+=appState.categories.map(c=>renderLibKit(c)).join('');
-    html+=`<button class="lib-add-btn" onclick="addCatLib()">${svgPlus(13)} New Kit</button>`;
-  } else {
+  if(isTpl){
     html+=appState.templates.map(t=>renderLibTpl(t)).join('');
     html+=`<button class="lib-add-btn" onclick="addTemplate()">${svgPlus(13)} New Pack</button>`;
+  } else {
+    html+=appState.categories.map(c=>renderLibKit(c)).join('');
+    html+=`<button class="lib-add-btn" onclick="addCatLib()">${svgPlus(13)} New Kit</button>`;
   }
   document.getElementById('libMain').innerHTML=html;
 }
@@ -1232,6 +1205,32 @@ function renderSettingsScreen(){
         <div class="settings-row-sub">Load kits and packs from a previously exported file</div>
       </div>
       <button onclick="importLibrary()" style="background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">Import</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-row-title">Import from Spreadsheet</div>
+        <div class="settings-row-sub">Add kits from an Excel or Google Sheets CSV file</div>
+      </div>
+      <button onclick="document.getElementById('csvFileInput').click()" style="background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">Import CSV</button>
+      <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none" onchange="importCSV(this)">
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:stretch;padding-top:0;">
+      <span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderSettingsScreen()" style="margin-bottom:${_importPanelOpen?'8':'0'}px;">
+        ${_importPanelOpen?'▾ Hide CSV guide':'▸ How to format your CSV'}
+      </span>
+      ${_importPanelOpen?`<div style="font-size:12px;color:var(--text-muted);line-height:1.6;">
+        Build your sheet with these columns, then save as <code style="background:var(--surface2);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px;">.csv</code> (File → Save As → CSV):
+        <table class="import-col-table" style="margin-top:8px;">
+          <tr><th>Column</th><th>What to put in it</th></tr>
+          <tr><td>Kit Name</td><td>Name of the kit. Same name across rows = one kit.</td></tr>
+          <tr><td>Item</td><td>The item or step text</td></tr>
+          <tr><td>Packing</td><td>Any value (e.g. "x") — adds to packing list</td></tr>
+          <tr><td>Setup</td><td>Any value — adds to setup routine</td></tr>
+          <tr><td>Teardown</td><td>Any value — adds to teardown routine</td></tr>
+          <tr><td>Important</td><td>Any value — flags packing item as IMPORTANT</td></tr>
+        </table>
+        <div style="margin-top:6px;">Blank cells are skipped. Existing kits are appended, not replaced.</div>
+      </div>`:''}
     </div>
   </div>
 </div>
