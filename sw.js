@@ -1,5 +1,5 @@
 const CACHE = 'gig-checklist-v2';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/icons/icon.svg'];
+const ASSETS = ['/tyo-gig-checklist/', '/tyo-gig-checklist/index.html', '/tyo-gig-checklist/manifest.json', '/tyo-gig-checklist/icons/icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
