@@ -106,7 +106,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-card.selected .kit-card-check svg{display:block;}
 .kit-card-name{font-size:13px;font-weight:600;color:var(--text);padding-right:20px;margin-bottom:3px;}
 .kit-card-sub{font-size:11px;color:var(--text-muted);line-height:1.4;}
-.kit-drag-handle{position:absolute;bottom:6px;right:7px;font-size:11px;color:var(--border2);line-height:1;cursor:grab;}
+.kit-drag-handle{position:absolute;bottom:6px;right:7px;font-size:11px;color:var(--border2);line-height:1;cursor:grab;touch-action:none;padding:4px;}
 
 .extra-tasks-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
 .extra-task-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;transition:background .1s,border-color .1s;}
@@ -527,36 +527,57 @@ function orderedTemplates(){
   if(!appState.templateOrder)appState.templateOrder=appState.templates.map(t=>t.id);
   return appState.templateOrder.map(id=>appState.templates.find(t=>t.id===id)).filter(Boolean);
 }
-function onTplDragStart(e,id){_dragTplId=id;e.dataTransfer.effectAllowed='move';setTimeout(()=>document.getElementById('kitcard_'+id)?.classList.add('dragging'),0);}
-function onTplDragEnd(){document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('dragging','drag-over'));_dragTplId=null;}
-function onTplDragEnter(e,id){if(_dragTplId&&_dragTplId!==id)document.getElementById('kitcard_'+id)?.classList.add('drag-over');}
-function onTplDragLeave(e,id){document.getElementById('kitcard_'+id)?.classList.remove('drag-over');}
-function onTplDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
-function onTplDrop(e,id){
-  e.preventDefault();
+// Pointer-based drag (works on touch + mouse)
+let _tplDrag=null;
+function startTplDrag(e,id){
+  e.preventDefault();e.stopPropagation();
+  const card=document.getElementById('kitcard_'+id);if(!card)return;
+  const rect=card.getBoundingClientRect();
+  const ghost=card.cloneNode(true);
+  ghost.removeAttribute('id');
+  ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2);border-radius:10px;`;
+  document.body.appendChild(ghost);
+  card.classList.add('dragging');
+  _tplDrag={id,ghost,card,ox:e.clientX-rect.left,oy:e.clientY-rect.top,overId:null,moved:false};
+  document.addEventListener('pointermove',_onTplMove,{passive:false});
+  document.addEventListener('pointerup',_onTplUp);
+  document.addEventListener('pointercancel',_onTplUp);
+}
+function _onTplMove(e){
+  if(!_tplDrag)return;e.preventDefault();
+  _tplDrag.moved=true;
+  _tplDrag.ghost.style.left=(e.clientX-_tplDrag.ox)+'px';
+  _tplDrag.ghost.style.top=(e.clientY-_tplDrag.oy)+'px';
+  _tplDrag.ghost.style.display='none';
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  _tplDrag.ghost.style.display='';
+  const overCard=el?.closest('.kit-card');
+  const overId=overCard?.id?.replace('kitcard_','');
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
-  if(!_dragTplId||_dragTplId===id)return;
-  const order=appState.templateOrder||appState.templates.map(t=>t.id);
-  const fi=order.indexOf(_dragTplId),ti=order.indexOf(id);
-  if(fi===-1||ti===-1)return;
-  order.splice(fi,1);order.splice(ti,0,_dragTplId);
-  appState.templateOrder=order;saveState();renderKitGrid();
+  if(overId&&overId!==_tplDrag.id){overCard.classList.add('drag-over');_tplDrag.overId=overId;}else{_tplDrag.overId=null;}
+}
+function _onTplUp(){
+  if(!_tplDrag)return;
+  const{id,ghost,card,overId}=_tplDrag;
+  ghost.remove();card.classList.remove('dragging');
+  document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onTplMove);
+  document.removeEventListener('pointerup',_onTplUp);
+  document.removeEventListener('pointercancel',_onTplUp);
+  _tplDrag=null;
+  if(overId){
+    const order=appState.templateOrder||appState.templates.map(t=>t.id);
+    const fi=order.indexOf(id),ti=order.indexOf(overId);
+    if(fi!==-1&&ti!==-1){order.splice(fi,1);order.splice(ti,0,id);appState.templateOrder=order;saveState();renderKitGrid();}
+  }
 }
 function renderKitGrid(){
   document.getElementById('kitGrid').innerHTML=orderedTemplates().map(t=>`
-<div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}"
-  draggable="true"
-  onclick="toggleKit('${t.id}')"
-  ondragstart="onTplDragStart(event,'${t.id}')"
-  ondragend="onTplDragEnd()"
-  ondragenter="onTplDragEnter(event,'${t.id}')"
-  ondragleave="onTplDragLeave(event,'${t.id}')"
-  ondragover="onTplDragOver(event)"
-  ondrop="onTplDrop(event,'${t.id}')">
+<div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')">
   <div class="kit-card-check">${svgCheck(9)}</div>
   <div class="kit-card-name">${escHtml(t.name)}</div>
   <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?c.title:''}).filter(Boolean).join(' · ')}</div>
-  <div class="kit-drag-handle">⋮⋮</div>
+  <div class="kit-drag-handle" onpointerdown="startTplDrag(event,'${t.id}')">⋮⋮</div>
 </div>`).join('');
 }
 function toggleKit(id){selectedKitIds.has(id)?selectedKitIds.delete(id):selectedKitIds.add(id);document.getElementById('kitcard_'+id)?.classList.toggle('selected',selectedKitIds.has(id));updateBuildBar();}
