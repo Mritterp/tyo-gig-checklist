@@ -1592,8 +1592,11 @@ function renderSettingsScreen(){
   const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   const syncBtnLabel=syncUser&&isPremiumUser?'✓ Active':syncUser?'Upgrade':'Set up';
   const syncBtnColor=syncUser&&isPremiumUser?'var(--green)':'var(--blue)';
-  const syncSubText=syncUser&&isPremiumUser?`Syncing as ${escHtml(syncUser.email||'')}`:syncUser?'Signed in — subscribe to activate sync':'Subscribe to enable sync across multiple devices';
+  const syncSubText=syncUser&&isPremiumUser?'Syncing automatically':syncUser?'Subscribe to activate sync':'Subscribe to enable sync across multiple devices';
   const syncModalTarget=syncUser&&isPremiumUser?'active':syncUser?'premium':'signin';
+  const initials=(syncUser?.displayName||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
+  const photoHtml=syncUser?.photoURL?`<img src="${escHtml(syncUser.photoURL)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:11px;font-weight:600;color:var(--blue)">${initials}</span>`;
+  const userChip=syncUser?`<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><div style="width:26px;height:26px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">${photoHtml}</div><span style="font-size:13px;font-weight:500;color:var(--text)">${escHtml(syncUser.displayName||syncUser.email||'')}</span></div>`:'';
   document.getElementById('settingsMain').innerHTML=`
 <div class="settings-section">
   <div class="settings-section-label">Sync &amp; Backup</div>
@@ -1602,6 +1605,7 @@ function renderSettingsScreen(){
       <div class="settings-row-left">
         <div class="settings-row-title" style="display:flex;align-items:center;gap:7px">Sync Across Devices <span class="premium-badge">PRO</span></div>
         <div class="settings-row-sub">${syncSubText}</div>
+        ${userChip}
       </div>
       <button onclick="showSyncModal('${syncModalTarget}')" style="background:${syncBtnColor};color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">${syncBtnLabel}</button>
     </div>
