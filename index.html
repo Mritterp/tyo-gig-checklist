@@ -1325,7 +1325,7 @@ function renderLibTpl(tpl){
 </div>`;
 }
 function renderTplRows(tpl){
-  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row" onpointerdown="if(!event.target.closest('.row-remove'))startPackRowDrag(event,'${tpl.id}',${ii})"><span class="drag-handle">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
+  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPKit(event,'${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
 }
 
 function renderLibKit(cat){
