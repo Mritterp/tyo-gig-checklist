@@ -708,9 +708,8 @@ function renderSyncModal(step){
 <div class="sync-modal-title">Sync Across Devices</div>
 <div class="sync-modal-sub">Keep your gig checklists up to date on every device — automatically.</div>
 <div class="sync-modal-features">
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text"><strong>Phone, tablet, desktop</strong> — changes appear everywhere within seconds.</div></div>
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">🔒</div><div class="sync-modal-feature-text"><strong>Your data only.</strong> Synced data is tied to your Google account — no one else can access it.</div></div>
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💰</div><div class="sync-modal-feature-text"><strong>Why $1/year?</strong> Syncing requires servers running 24/7. This covers those infrastructure costs.</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💰</div><div class="sync-modal-feature-text"><strong>Why $1/year?</strong> Syncing requires servers running 24/7. This subscription covers those infrastructure costs.</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text">Synced data is tied to your Google account so changes appear across your phone, tablet, or desktop.</div></div>
 </div>
 <button class="sync-modal-cta" onclick="signInWithGoogle()">Sign in with Google to continue</button>
 <button class="sync-modal-skip" onclick="closeSyncModal()">Not now</button>`;
@@ -1593,7 +1592,7 @@ function renderSettingsScreen(){
   const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   const syncBtnLabel=syncUser&&isPremiumUser?'✓ Active':syncUser?'Upgrade':'Set up';
   const syncBtnColor=syncUser&&isPremiumUser?'var(--green)':'var(--blue)';
-  const syncSubText=syncUser&&isPremiumUser?`Syncing as ${escHtml(syncUser.email||'')}`:syncUser?'Signed in — subscribe to activate sync':'Keep gig data in sync across all your devices';
+  const syncSubText=syncUser&&isPremiumUser?`Syncing as ${escHtml(syncUser.email||'')}`:syncUser?'Signed in — subscribe to activate sync':'Subscribe to enable sync across multiple devices';
   const syncModalTarget=syncUser&&isPremiumUser?'active':syncUser?'premium':'signin';
   document.getElementById('settingsMain').innerHTML=`
 <div class="settings-section">
