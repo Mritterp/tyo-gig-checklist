@@ -1,5 +1,5 @@
-const CACHE = 'gig-checklist-v6';
-const ASSETS = ['/tyo-gig-checklist/', '/tyo-gig-checklist/index.html', '/tyo-gig-checklist/manifest.json', '/tyo-gig-checklist/icons/icon.svg'];
+const CACHE = 'gig-checklist-v7';
+const ASSETS = ['/tyo-gig-checklist/', '/tyo-gig-checklist/index.html', '/tyo-gig-checklist/manifest.json', '/tyo-gig-checklist/icons/icon.svg', '/tyo-gig-checklist/icons/icon-192.png', '/tyo-gig-checklist/icons/icon-512.png', '/tyo-gig-checklist/icons/icon-180.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
