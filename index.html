@@ -717,10 +717,25 @@ function showSyncModal(step){
 }
 function closeSyncModal(){document.getElementById('syncModalOverlay').style.display='none';}
 
-// Prevent iOS scroll from swallowing drag-handle touches before pointer events fire
+// Prevent iOS/Android scroll from swallowing drag-handle touches before pointer events fire
 document.addEventListener('touchstart', e => {
   if (e.target.closest('.drag-handle,.kit-drag-handle')) e.preventDefault();
 }, {passive: false});
+
+// Android back gesture — collapse expanded items first, confirm exit if nothing is open
+history.pushState(null, '');
+window.addEventListener('popstate', function(){
+  history.pushState(null, '');
+  // 1. Close confirm dialog if open
+  if(document.getElementById('confirmOverlay').style.display!=='none'){closeConfirm();return;}
+  // 2. Collapse open library item
+  if(openLibId){openLibId=null;renderLibraryScreen();return;}
+  // 3. Go to dashboard from any sub-screen
+  const screen=document.querySelector('.screen.active')?.id;
+  if(screen&&screen!=='screenDash'){goBack('screenDash');return;}
+  // 4. On dashboard — confirm before exit
+  appConfirm('Exit Gig Checklist?',()=>{window.close();},'Exit');
+});
 
 let _confirmCb=null;
 function appConfirm(msg,onYes,okLabel){_confirmCb=onYes;document.getElementById('confirmMsg').textContent=msg;document.getElementById('confirmOkBtn').textContent=okLabel||'Delete';document.getElementById('confirmOverlay').style.display='flex';}
