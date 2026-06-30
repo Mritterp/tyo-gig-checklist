@@ -59,7 +59,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .up-next-progress-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text);margin-bottom:6px;}
 .up-next-pct{color:var(--orange);font-weight:600;}
 .up-next-bar{height:6px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden;}
-.up-next-bar-fill{height:100%;background:var(--orange);border-radius:4px;}
+.up-next-bar-fill{height:100%;border-radius:4px;}
 
 .gig-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
 .gig-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;cursor:pointer;transition:border-color .15s;position:relative;}
@@ -70,8 +70,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .gig-card-meta{font-size:12px;color:var(--text-muted);margin-bottom:10px;}
 .gig-card-progress-row{display:flex;align-items:center;gap:9px;}
 .gig-card-bar{flex:1;height:6px;background:var(--surface3);border-radius:4px;overflow:hidden;}
-.gig-card-bar-fill{height:100%;background:var(--text-faint);border-radius:4px;}
-.gig-card-bar-fill.done{background:var(--green);}
+.gig-card-bar-fill{height:100%;border-radius:4px;}
 .gig-card-count{font-size:12px;color:var(--text-muted);flex-shrink:0;}
 .gig-phase-dots{display:flex;gap:3px;align-items:center;flex-shrink:0;}
 .gig-phase-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface3);color:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
@@ -878,7 +877,7 @@ function renderDashboard(){
   <div class="up-next-header"><div style="display:flex;align-items:center;gap:8px;min-width:0">${upNextDots}<div class="up-next-name">${escHtml(upNext.name)}</div></div><span style="display:flex;align-items:center;gap:10px;flex-shrink:0"><button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${upNext.id}')" style="position:static;opacity:.6">${svgX(11)}</button><span style="color:var(--text-muted);font-size:18px">›</span></span></div>
   ${sub?`<div class="up-next-call">${sub}</div>`:'<div style="margin-bottom:12px"></div>'}
   <div class="up-next-progress-row"><span>${kd} of ${kt} kits packed</span><span class="up-next-pct">${pct}%</span></div>
-  <div class="up-next-bar"><div class="up-next-bar-fill" style="width:${pct}%"></div></div>
+  <div class="up-next-bar"><div class="up-next-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)'}"></div></div>
 </div>`;
   }
   if(rest.length){
@@ -896,7 +895,7 @@ function renderDashboard(){
     <div style="display:flex;align-items:center;gap:8px;min-width:0">${phaseDots}<div class="gig-card-name">${escHtml(g.name)}</div></div>
   </div>
   ${meta?`<div class="gig-card-meta">${escHtml(meta)}</div>`:''}
-  <div class="gig-card-progress-row"><div class="gig-card-bar"><div class="gig-card-bar-fill${allDone?' done':''}" style="width:${pct}%"></div></div><span class="gig-card-count">${done} / ${total}</span></div>
+  <div class="gig-card-progress-row"><div class="gig-card-bar"><div class="gig-card-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)'}"></div></div><span class="gig-card-count">${done} / ${total}</span></div>
 </div>`;
     });
     html+='</div>';
@@ -1551,7 +1550,7 @@ function renderPhaseContent(){
         <div class="dt-phase-actions"><button class="sm-btn" onclick="resetPhase(${pi})">Reset</button><button class="sm-btn green" onclick="checkAllPhase(${pi})">Check All</button></div>`;
       if(pi===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up.</div>`;
       phase.categories.forEach(cat=>{html+=renderCategory(cat,pi);});
-      html+=`</div>`;
+      html+=`<button class="add-cat-btn" onclick="addCategory(${pi})">${svgPlus(10)} Add Kit</button></div>`;
     });
     clMain.innerHTML=html;
     return;
@@ -1584,7 +1583,7 @@ function commitEditItem(){if(!editingItem)return;const{id}=editingItem;editingIt
 function startEditCat(catId){const cat=findCat(catId);if(!cat)return;const span=document.getElementById('cattitle_'+catId);if(!span)return;const inp=document.createElement('input');inp.className='category-title-input';inp.value=cat.title;const commit=()=>{if(inp.value.trim())cat.title=inp.value.trim();saveState();renderPhaseContent();};inp.onblur=commit;inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape')renderPhaseContent();};span.replaceWith(inp);inp.focus();inp.select();}
 function addItem(catId){if(editingItem)commitEditItem();const cat=findCat(catId);if(!cat)return;const ni={id:uid(),text:'New item',checked:false,note:'',shared:false};cat.items.push(ni);saveState();renderPhaseContent();setTimeout(()=>startEditItem(ni.id),40);}
 function deleteItem(id){const f=findItem(id);if(!f)return;f.cat.items=f.cat.items.filter(i=>i.id!==id);saveState();renderPhaseContent();}
-function addCategory(){const gig=getActiveGig();const phase=gig.phases[activePhaseIdx];const nc={id:uid(),title:'New Kit',items:[{id:uid(),text:'First item',checked:false,note:'',shared:false}],expanded:true};phase.categories.push(nc);saveState();renderPhaseContent();setTimeout(()=>startEditCat(nc.id),40);}
+function addCategory(phaseIdx){const gig=getActiveGig();const pi=phaseIdx!==undefined?phaseIdx:activePhaseIdx;const phase=gig.phases[pi];const nc={id:uid(),title:'New Kit',items:[{id:uid(),text:'First item',checked:false,note:'',shared:false}],expanded:true};phase.categories.push(nc);saveState();renderPhaseContent();setTimeout(()=>startEditCat(nc.id),40);}
 function resetPhase(pi){if(!confirm('Uncheck all items in this phase?'))return;const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();}
 function checkAllPhase(pi){const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=true));saveState();renderPhaseContent();}
 
