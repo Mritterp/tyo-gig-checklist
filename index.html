@@ -872,9 +872,10 @@ function renderDashboard(){
     const kd=gigKitsDone(upNext),kt=totalKits(upNext),pct=kt?Math.round(kd/kt*100):0;
     const dl=upNext.date?dayLabel(upNext.date):'';
     const sub=dl;
+    const upNextDots=`<div class="gig-phase-dots">${['P','S','W'].map((l,i)=>{const ph=upNext.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p)}">${l}</div>`;}).join('')}</div>`;
     html+=`<div class="section-label orange">Up Next</div>
 <div class="up-next-card" onclick="openGig('${upNext.id}')">
-  <div class="up-next-header"><div class="up-next-name">${escHtml(upNext.name)}</div><span style="display:flex;align-items:center;gap:10px"><button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${upNext.id}')" style="position:static;opacity:.6">${svgX(11)}</button><span style="color:var(--text-muted);font-size:18px">›</span></span></div>
+  <div class="up-next-header"><div style="display:flex;align-items:center;gap:8px;min-width:0">${upNextDots}<div class="up-next-name">${escHtml(upNext.name)}</div></div><span style="display:flex;align-items:center;gap:10px;flex-shrink:0"><button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${upNext.id}')" style="position:static;opacity:.6">${svgX(11)}</button><span style="color:var(--text-muted);font-size:18px">›</span></span></div>
   ${sub?`<div class="up-next-call">${sub}</div>`:'<div style="margin-bottom:12px"></div>'}
   <div class="up-next-progress-row"><span>${kd} of ${kt} kits packed</span><span class="up-next-pct">${pct}%</span></div>
   <div class="up-next-bar"><div class="up-next-bar-fill" style="width:${pct}%"></div></div>
