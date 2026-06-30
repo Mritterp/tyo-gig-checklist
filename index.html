@@ -1107,8 +1107,8 @@ function _onPackUp(e){
   document.removeEventListener('pointermove',_onPackMove);
   document.removeEventListener('pointerup',_onPackUp);
   document.removeEventListener('pointercancel',_onPackCancel);
-  _packDrag=null;
   const nearest=_nearestPackRow(ghostCy,idx);
+  _packDrag=null;
   if(!nearest||nearest.idx===idx)return;
   const tpl=getTpl(tplId);if(!tpl)return;
   const ids=tpl.categoryIds||[];
