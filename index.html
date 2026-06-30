@@ -226,6 +226,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .category-header.kit-done .category-count{color:var(--green);}
 .category-header.kit-partial .category-count{color:var(--orange);}
 .kit-chevron{color:var(--text-faint);font-size:16px;flex-shrink:0;line-height:1;}
+.kit-del-btn{background:none;border:none;cursor:pointer;color:var(--text-faint);padding:4px 2px;flex-shrink:0;opacity:0;transition:opacity .15s;}
+.category-header:hover .kit-del-btn,.kit-del-btn:focus{opacity:1;}
+.kit-del-btn:hover{color:var(--danger);}
+@media(max-width:1099px){.kit-del-btn{opacity:.5;}}
 
 .category-body{display:none;padding:4px 0 2px 6px;}
 .category-body.open{display:block;}
@@ -410,6 +414,13 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 .text-size-picker{display:flex;gap:8px;margin-top:2px;}
 .tsz-btn{flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text-muted);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
 .tsz-btn.active{border-color:var(--blue);background:var(--blue);color:#fff;}
+/* CONFIRM DIALOG */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
+.confirm-sheet{background:var(--surface);border-radius:16px 16px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px;}
+.confirm-msg{font-size:15px;color:var(--text);text-align:center;padding:4px 0 8px;line-height:1.4;}
+.confirm-btn{padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;}
+.confirm-btn.danger{background:var(--danger);color:#fff;}
+.confirm-btn.cancel{background:var(--surface3);color:var(--text);}
 /* SYNC / PREMIUM */
 .sync-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
 @media(min-width:600px){.sync-modal-overlay{align-items:center;}}
@@ -443,6 +454,14 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <div class="complete-flash" id="completeFlash"></div>
 <div class="toast" id="toast"></div>
 
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay" style="display:none" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-sheet">
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <button class="confirm-btn danger" onclick="runConfirm()">Delete</button>
+    <button class="confirm-btn cancel" onclick="closeConfirm()">Cancel</button>
+  </div>
+</div>
 <!-- SYNC MODAL -->
 <div class="sync-modal-overlay" id="syncModalOverlay" style="display:none" onclick="if(event.target===this)closeSyncModal()">
   <div class="sync-modal" id="syncModal"></div>
@@ -697,6 +716,11 @@ function showSyncModal(step){
 }
 function closeSyncModal(){document.getElementById('syncModalOverlay').style.display='none';}
 
+let _confirmCb=null;
+function appConfirm(msg,onYes){_confirmCb=onYes;document.getElementById('confirmMsg').textContent=msg;document.getElementById('confirmOverlay').style.display='flex';}
+function closeConfirm(){document.getElementById('confirmOverlay').style.display='none';_confirmCb=null;}
+function runConfirm(){const cb=_confirmCb;closeConfirm();cb&&cb();}
+
 function renderSyncModal(step){
   _syncModalStep=step;
   const m=document.getElementById('syncModal');
@@ -907,7 +931,7 @@ function gigProgress(gig){let done=0,total=0;(gig.phases||[]).forEach(p=>p.categ
 function phasesDone(gig){return(gig.phases||[]).map(p=>{const items=p.categories.flatMap(c=>c.items);return items.length>0&&items.every(i=>i.checked);});}
 function gigKitsDone(gig){let n=0;(gig.phases?.[0]?.categories||[]).forEach(c=>{if(c.items.length&&c.items.every(i=>i.checked))n++;});return n;}
 function totalKits(gig){return gig.phases?.[0]?.categories?.length||0;}
-function deleteGig(id){const g=appState.gigs.find(g=>g.id===id);if(!confirm(`Delete "${g?.name||'this gig'}"? This cannot be undone.`))return;appState.gigs=appState.gigs.filter(g=>g.id!==id);saveState();renderDashboard();}
+function deleteGig(id){const g=appState.gigs.find(g=>g.id===id);appConfirm(`Delete "${g?.name||'this gig'}"? This cannot be undone.`,()=>{appState.gigs=appState.gigs.filter(g=>g.id!==id);saveState();renderDashboard();});}
 function openGig(id){activeGigId=id;activePhaseIdx=0;renderChecklistScreen();showScreen('screenChecklist');}
 function dayLabel(ds){
   const d=new Date(ds+'T12:00:00'),t=new Date();t.setHours(12,0,0,0);
@@ -1331,7 +1355,8 @@ function addRoutineStep(catId,routineKey){
 }
 function deleteRoutineStep(catId,routineKey,idx){
   const cat=getCat(catId);if(!cat||!cat[routineKey])return;
-  cat[routineKey].splice(idx,1);saveState();openLibId=catId;kitRoutineTab[catId]=routineKey;renderLibraryScreen();
+  const step=cat[routineKey][idx];const txt=typeof step==='string'?step:step?.text;
+  appConfirm(`Delete "${txt||'this step'}"?`,()=>{cat[routineKey].splice(idx,1);saveState();openLibId=catId;kitRoutineTab[catId]=routineKey;renderLibraryScreen();});
 }
 function updateRoutineStep(catId,routineKey,idx,val){
   const cat=getCat(catId);if(!cat||!cat[routineKey])return;
@@ -1345,7 +1370,7 @@ function updateRoutineStep(catId,routineKey,idx,val){
 function addCatToTpl(tplId){const sel=document.getElementById('tplsel_'+tplId);if(!sel||!sel.value)return;const tpl=getTpl(tplId);if(!tpl)return;if(!(tpl.categoryIds||[]).includes(sel.value)){(tpl.categoryIds=tpl.categoryIds||[]).push(sel.value);}saveState();openLibId=tplId;renderLibraryScreen();}
 function removeCatFromTpl(tplId,catId){const tpl=getTpl(tplId);if(!tpl)return;tpl.categoryIds=(tpl.categoryIds||[]).filter(id=>id!==catId);saveState();openLibId=tplId;renderLibraryScreen();}
 function saveTpl(tplId){saveState();showToast('Pack saved');}
-function deleteTpl(tplId){const btn=document.querySelector(`#libitem_${tplId} .lib-delete`);if(!btn)return;if(btn.dataset.c==='1'){appState.templates=appState.templates.filter(t=>t.id!==tplId);if(appState.templateOrder)appState.templateOrder=appState.templateOrder.filter(id=>id!==tplId);saveState();openLibId=null;renderLibraryScreen();}else{btn.dataset.c='1';btn.textContent='Confirm?';setTimeout(()=>{if(btn.dataset.c==='1'){btn.dataset.c='';btn.textContent='DELETE';}},3000);}}
+function deleteTpl(tplId){const tpl=getTpl(tplId);appConfirm(`Delete pack "${tpl?.name||'this pack'}"?`,()=>{appState.templates=appState.templates.filter(t=>t.id!==tplId);if(appState.templateOrder)appState.templateOrder=appState.templateOrder.filter(id=>id!==tplId);saveState();openLibId=null;renderLibraryScreen();});}
 function addTemplate(){const t={id:uid(),name:'New Pack',categoryIds:[]};appState.templates.push(t);if(appState.templateOrder)appState.templateOrder.push(t.id);saveState();openLibId=t.id;renderLibraryScreen();setTimeout(()=>beginRenameLibTpl(t.id),50);}
 
 // kit ops
@@ -1355,12 +1380,14 @@ function toggleCatShared(catId,idx){const cat=getCat(catId);if(!cat)return;cat.i
 function deleteCatItem(catId,idx){
   const cat=getCat(catId);if(!cat)return;
   if(cat.items.length<=1){showToast('Keep at least one item.');return;}
-  const listEl=document.getElementById('kitlist_'+catId);
-  if(listEl)listEl.querySelectorAll('.kit-item-input').forEach((inp,i)=>{if(inp.value.trim())cat.items[i].text=inp.value.trim();});
-  cat.items.splice(idx,1);saveState();openLibId=catId;renderLibraryScreen();
+  appConfirm(`Delete "${cat.items[idx]?.text||'this item'}"?`,()=>{
+    const listEl=document.getElementById('kitlist_'+catId);
+    if(listEl)listEl.querySelectorAll('.kit-item-input').forEach((inp,i)=>{if(inp.value.trim())cat.items[i].text=inp.value.trim();});
+    cat.items.splice(idx,1);saveState();openLibId=catId;renderLibraryScreen();
+  });
 }
 function addCatItem(catId){const cat=getCat(catId);if(!cat)return;cat.items.push({text:'New item',shared:false});saveState();openLibId=catId;renderLibraryScreen();setTimeout(()=>{const listEl=document.getElementById('kitlist_'+catId);if(!listEl)return;const inputs=listEl.querySelectorAll('.kit-item-input');inputs[inputs.length-1]?.focus();inputs[inputs.length-1]?.select();},40);}
-function deleteCatLib(catId){const btn=document.querySelector(`#libitem_${catId} .lib-delete`);if(!btn)return;if(btn.dataset.c==='1'){openLibId=null;appState.templates.forEach(t=>{t.categoryIds=(t.categoryIds||[]).filter(id=>id!==catId);});appState.categories=appState.categories.filter(c=>c.id!==catId);saveState();renderLibraryScreen();}else{btn.dataset.c='1';btn.textContent='Confirm?';setTimeout(()=>{if(btn.dataset.c==='1'){btn.dataset.c='';btn.textContent='DELETE';}},3000);}}
+function deleteCatLib(catId){const cat=getCat(catId);appConfirm(`Delete kit "${cat?.title||'this kit'}"?`,()=>{openLibId=null;appState.templates.forEach(t=>{t.categoryIds=(t.categoryIds||[]).filter(id=>id!==catId);});appState.categories=appState.categories.filter(c=>c.id!==catId);saveState();renderLibraryScreen();});}
 function addCatLib(){const cat={id:uid(),title:'New Kit',items:[{text:'First item',shared:false}]};appState.categories.push(cat);saveState();openLibId=cat.id;libraryTab='kits';renderLibraryScreen();setTimeout(()=>{document.querySelector(`#libitem_${cat.id} .lib-name-input`)?.focus();},50);}
 function saveCatAndPropagate(catId){
   saveState();
@@ -1456,6 +1483,7 @@ function renderCategory(cat,phaseIdx){
     ${hasShared?`<div class="kit-shared-badge">!</div>`:''}
     <span class="category-count">${done}/${cat.items.length}</span>
     <span class="kit-chevron">${isExp?'‹':'›'}</span>
+    <button class="kit-del-btn" onclick="event.stopPropagation();deleteCategory('${cat.id}')">${svgX(9)}</button>
   </div>
   <div class="category-body ${isExp?'open':''}" id="catbody_${cat.id}">
     <div class="items-list" id="list_${cat.id}">${cat.items.map(item=>renderItem(item,isPacking)).join('')}</div>
@@ -1582,7 +1610,8 @@ function startEditItem(id){if(editingItem)commitEditItem();const f=findItem(id);
 function commitEditItem(){if(!editingItem)return;const{id}=editingItem;editingItem=null;const el=document.getElementById('item_'+id);if(!el)return;const inp=el.querySelector('.item-text-input');if(!inp)return;const v=inp.value.trim();if(v){const f=findItem(id);if(f){f.item.text=v;saveState();}}renderPhaseContent();}
 function startEditCat(catId){const cat=findCat(catId);if(!cat)return;const span=document.getElementById('cattitle_'+catId);if(!span)return;const inp=document.createElement('input');inp.className='category-title-input';inp.value=cat.title;const commit=()=>{if(inp.value.trim())cat.title=inp.value.trim();saveState();renderPhaseContent();};inp.onblur=commit;inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape')renderPhaseContent();};span.replaceWith(inp);inp.focus();inp.select();}
 function addItem(catId){if(editingItem)commitEditItem();const cat=findCat(catId);if(!cat)return;const ni={id:uid(),text:'New item',checked:false,note:'',shared:false};cat.items.push(ni);saveState();renderPhaseContent();setTimeout(()=>startEditItem(ni.id),40);}
-function deleteItem(id){const f=findItem(id);if(!f)return;f.cat.items=f.cat.items.filter(i=>i.id!==id);saveState();renderPhaseContent();}
+function deleteItem(id){const f=findItem(id);if(!f)return;appConfirm(`Delete "${f.item.text}"?`,()=>{f.cat.items=f.cat.items.filter(i=>i.id!==id);saveState();renderPhaseContent();});}
+function deleteCategory(catId){const gig=getActiveGig();if(!gig)return;const cat=findCat(catId);if(!cat)return;appConfirm(`Delete kit "${cat.title}" and all its items?`,()=>{gig.phases.forEach(p=>{p.categories=p.categories.filter(c=>c.id!==catId);});saveState();renderPhaseContent();});}
 function addCategory(phaseIdx){const gig=getActiveGig();const pi=phaseIdx!==undefined?phaseIdx:activePhaseIdx;const phase=gig.phases[pi];const nc={id:uid(),title:'New Kit',items:[{id:uid(),text:'First item',checked:false,note:'',shared:false}],expanded:true};phase.categories.push(nc);saveState();renderPhaseContent();setTimeout(()=>startEditCat(nc.id),40);}
 function resetPhase(pi){if(!confirm('Uncheck all items in this phase?'))return;const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();}
 function checkAllPhase(pi){const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=true));saveState();renderPhaseContent();}
