@@ -719,7 +719,7 @@ function closeSyncModal(){document.getElementById('syncModalOverlay').style.disp
 
 // Prevent iOS scroll from swallowing drag-handle touches before pointer events fire
 document.addEventListener('touchstart', e => {
-  if (e.target.closest('.drag-handle')) e.preventDefault();
+  if (e.target.closest('.drag-handle,.kit-drag-handle')) e.preventDefault();
 }, {passive: false});
 
 let _confirmCb=null;
@@ -967,6 +967,8 @@ function _nearestCard(cx,cy,excludeId){
 }
 function startTplDrag(e,id){
   if(e.target.closest('.kit-card-check'))return;
+  e.preventDefault();
+  try{e.target.setPointerCapture(e.pointerId);}catch(_){}
   const card=document.getElementById('kitcard_'+id);if(!card)return;
   const rect=card.getBoundingClientRect();
   _tplDrag={id,card,ghost:null,ox:e.clientX-rect.left,oy:e.clientY-rect.top,gw:rect.width,gh:rect.height,startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastY:e.clientY,active:false};
