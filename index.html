@@ -1418,13 +1418,13 @@ function renderGigRail(){
   gigs.forEach(g=>{
     const active=g.id===activeGigId;
     const ds=g.date?new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
-    const done=gigKitsDone(g),total=totalKits(g);
+    const{done,total}=gigProgress(g);
     const pct=total?Math.round(done/total*100):0;
     const barColor=pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)';
     const railDots=['P','S','W'].map((l,i)=>{const ph=g.phases?.[i];const{done:rd,total:rt}=ph?phaseProgress(ph):{done:0,total:0};const rp=rt?Math.round(rd/rt*100):0;return`<div class="gig-phase-dot" style="width:14px;height:14px;font-size:7px;${phaseDotStyle(rp,rt)}">${l}</div>`;}).join('');
     html+=`<div class="gig-rail-item${active?' active':''}" onclick="openGig('${g.id}')">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div class="gig-phase-dots">${railDots}</div><div class="gig-rail-name" style="margin-bottom:0">${escHtml(g.name)}</div></div>
-      <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' kits':''}</div>
+      <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' items':''}</div>
       ${total?`<div class="gig-rail-bar"><div class="gig-rail-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>`:''}
     </div>`;
   });
