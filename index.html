@@ -1325,7 +1325,7 @@ function renderLibTpl(tpl){
 </div>`;
 }
 function renderTplRows(tpl){
-  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPKit(event,'${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
+  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row" id="tplrow_${tpl.id}_${cid}" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPRenameTplKit(event,'${tpl.id}','${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span><span class="tpl-kit-name" id="tplkitname_${tpl.id}_${cid}">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
 }
 
 function renderLibKit(cat){
@@ -1466,6 +1466,18 @@ function saveCatAndPropagate(catId){
 function cancelLP(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}}
 function startLPTpl(e,id){cancelLP();_lpTimer=setTimeout(()=>{_lpTimer=null;beginRenameLibTpl(id);},500);}
 function startLPKit(e,id){cancelLP();_lpTimer=setTimeout(()=>{_lpTimer=null;beginRenameLibKit(id);},500);}
+function startLPRenameTplKit(e,tplId,catId){cancelLP();_lpTimer=setTimeout(()=>{_lpTimer=null;beginRenameTplKit(tplId,catId);},500);}
+function beginRenameTplKit(tplId,catId){
+  const cat=getCat(catId);if(!cat)return;
+  const nameEl=document.getElementById('tplkitname_'+tplId+'_'+catId);if(!nameEl)return;
+  const inp=document.createElement('input');
+  inp.value=cat.title;
+  inp.style.cssText='flex:1;min-width:0;font-size:13px;color:var(--text);background:transparent;border:none;border-bottom:1.5px solid var(--blue);outline:none;font-family:Inter,sans-serif;';
+  const commit=()=>{if(inp.value.trim()){cat.title=inp.value.trim();saveState();}openLibId=tplId;renderLibraryScreen();};
+  inp.onblur=commit;inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){openLibId=tplId;renderLibraryScreen();}};
+  inp.onclick=e=>e.stopPropagation();
+  nameEl.replaceWith(inp);inp.focus();inp.select();
+}
 
 // Library item drag-to-reorder (triggered from ⋮⋮ handle only)
 let _libDrag=null;
