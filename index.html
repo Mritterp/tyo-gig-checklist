@@ -896,7 +896,7 @@ function renderDashboard(){
     <div style="display:flex;align-items:center;gap:8px;min-width:0">${phaseDots}<div class="gig-card-name">${escHtml(g.name)}</div></div>
   </div>
   ${meta?`<div class="gig-card-meta">${escHtml(meta)}</div>`:''}
-  ${!allDone?`<div class="gig-card-progress-row"><div class="gig-card-bar"><div class="gig-card-bar-fill${allDone?' done':''}" style="width:${pct}%"></div></div><span class="gig-card-count">${done} / ${total}</span></div>`:''}
+  <div class="gig-card-progress-row"><div class="gig-card-bar"><div class="gig-card-bar-fill${allDone?' done':''}" style="width:${pct}%"></div></div><span class="gig-card-count">${done} / ${total}</span></div>
 </div>`;
     });
     html+='</div>';
