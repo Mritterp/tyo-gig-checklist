@@ -104,7 +104,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-card.selected{border:1.5px solid var(--green-border);background:var(--green-dim);border-radius:12px;}
 .kit-card.dragging{opacity:0.35;border-style:dashed;}
 .kit-card.drag-over{border-color:var(--blue);background:var(--blue-dim,#E8F0FE);}
-.kit-item-row.drag-over,.step-row.drag-over{border-color:var(--blue);background:var(--blue-dim);}
+.kit-item-row.drag-over,.step-row.drag-over,.tpl-kit-row.drag-over{border-color:var(--blue);background:var(--blue-dim);}
 .kit-card-check{position:absolute;top:7px;right:7px;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;background:var(--surface);transition:all .15s;}
 .kit-card.selected .kit-card-check{background:var(--green);border-color:var(--green);}
 .kit-card-check svg{display:none;}
@@ -1055,6 +1055,67 @@ function _onListUp(e){
   const item=arr.splice(idx,1)[0];arr.splice(nearest.idx,0,item);
   saveState();openLibId=catId;kitRoutineTab[catId]=routineKey||'packing';renderLibraryScreen();
 }
+
+// Pack kit row drag (reorder kits within a pack template)
+let _packDrag=null;
+function startPackRowDrag(e,tplId,idx){
+  e.preventDefault();e.stopPropagation();
+  const row=e.target.closest('.tpl-kit-row');if(!row)return;
+  const rect=row.getBoundingClientRect();
+  const ghost=row.cloneNode(true);
+  ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2);border-radius:8px;`;
+  document.body.appendChild(ghost);
+  row.style.opacity='0.35';
+  _packDrag={tplId,idx,ghost,row,oy:e.clientY-rect.top,gh:rect.height,lastY:e.clientY};
+  document.addEventListener('pointermove',_onPackMove,{passive:false});
+  document.addEventListener('pointerup',_onPackUp);
+  document.addEventListener('pointercancel',_onPackCancel);
+}
+function _nearestPackRow(y,excludeIdx){
+  let best=null,bestDist=Infinity;
+  document.querySelectorAll('#tplrows_'+_packDrag.tplId+' .tpl-kit-row').forEach((r,i)=>{
+    if(i===excludeIdx)return;
+    const rc=r.getBoundingClientRect();const cy=rc.top+rc.height/2;const dist=Math.abs(y-cy);
+    if(dist<bestDist){bestDist=dist;best={el:r,idx:i};}
+  });
+  return best;
+}
+function _onPackMove(e){
+  if(!_packDrag)return;e.preventDefault();
+  _packDrag.lastY=e.clientY;
+  _packDrag.ghost.style.top=(e.clientY-_packDrag.oy)+'px';
+  const ghostCy=e.clientY-_packDrag.oy+_packDrag.gh/2;
+  document.querySelectorAll('#tplrows_'+_packDrag.tplId+' .tpl-kit-row').forEach(r=>r.classList.remove('drag-over'));
+  const nearest=_nearestPackRow(ghostCy,_packDrag.idx);
+  if(nearest)nearest.el.classList.add('drag-over');
+}
+function _onPackCancel(){
+  if(!_packDrag)return;
+  _packDrag.ghost.remove();_packDrag.row.style.opacity='';
+  document.querySelectorAll('.tpl-kit-row').forEach(r=>r.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onPackMove);
+  document.removeEventListener('pointerup',_onPackUp);
+  document.removeEventListener('pointercancel',_onPackCancel);
+  _packDrag=null;
+}
+function _onPackUp(e){
+  if(!_packDrag)return;
+  const{tplId,idx,ghost,row,lastY,oy,gh}=_packDrag;
+  const ghostCy=(e?.clientY??lastY)-oy+gh/2;
+  ghost.remove();row.style.opacity='';
+  document.querySelectorAll('.tpl-kit-row').forEach(r=>r.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onPackMove);
+  document.removeEventListener('pointerup',_onPackUp);
+  document.removeEventListener('pointercancel',_onPackCancel);
+  _packDrag=null;
+  const nearest=_nearestPackRow(ghostCy,idx);
+  if(!nearest||nearest.idx===idx)return;
+  const tpl=getTpl(tplId);if(!tpl)return;
+  const ids=tpl.categoryIds||[];
+  const[moved]=ids.splice(idx,1);ids.splice(nearest.idx,0,moved);
+  saveState();openLibId=tplId;renderLibraryScreen();
+}
+
 function _onTplCancel(){
   if(!_tplDrag)return;
   if(_tplDrag.ghost){_tplDrag.ghost.remove();_tplDrag.card.style.opacity='';}
@@ -1263,7 +1324,7 @@ function renderLibTpl(tpl){
 </div>`;
 }
 function renderTplRows(tpl){
-  return(tpl.categoryIds||[]).map(cid=>{const cat=getCat(cid);return`<div class="tpl-kit-row"><span class="drag-handle">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
+  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row"><span class="drag-handle" onpointerdown="startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
 }
 
 function renderLibKit(cat){
