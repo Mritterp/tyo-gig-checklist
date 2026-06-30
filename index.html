@@ -872,7 +872,7 @@ function renderDashboard(){
     const kd=gigKitsDone(upNext),kt=totalKits(upNext),pct=kt?Math.round(kd/kt*100):0;
     const dl=upNext.date?dayLabel(upNext.date):'';
     const sub=dl;
-    const upNextDots=`<div class="gig-phase-dots">${['P','S','W'].map((l,i)=>{const ph=upNext.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p)}">${l}</div>`;}).join('')}</div>`;
+    const upNextDots=`<div class="gig-phase-dots">${['P','S','W'].map((l,i)=>{const ph=upNext.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p,t)}">${l}</div>`;}).join('')}</div>`;
     html+=`<div class="section-label orange">Up Next</div>
 <div class="up-next-card" onclick="openGig('${upNext.id}')">
   <div class="up-next-header"><div style="display:flex;align-items:center;gap:8px;min-width:0">${upNextDots}<div class="up-next-name">${escHtml(upNext.name)}</div></div><span style="display:flex;align-items:center;gap:10px;flex-shrink:0"><button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${upNext.id}')" style="position:static;opacity:.6">${svgX(11)}</button><span style="color:var(--text-muted);font-size:18px">›</span></span></div>
@@ -889,7 +889,7 @@ function renderDashboard(){
       const tn=(g.kitIds||[]).map(id=>getTpl(id)?.name).filter(Boolean).join(' + ');
       const meta=[ds,tn].filter(Boolean).join(' · ');
       const labels=['P','S','W'];
-      const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>{const ph=g.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p)}">${l}</div>`;}).join('')}</div>`;
+      const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>{const ph=g.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p,t)}">${l}</div>`;}).join('')}</div>`;
       html+=`<div class="gig-card" onclick="openGig('${g.id}')">
   <button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${g.id}')">${svgX(11)}</button>
   <div class="gig-card-row1">
@@ -1421,7 +1421,7 @@ function renderGigRail(){
     const done=gigKitsDone(g),total=totalKits(g);
     const pct=total?Math.round(done/total*100):0;
     const barColor=pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)';
-    const railDots=['P','S','W'].map((l,i)=>{const ph=g.phases?.[i];const{done:rd,total:rt}=ph?phaseProgress(ph):{done:0,total:0};const rp=rt?Math.round(rd/rt*100):0;return`<div class="gig-phase-dot" style="width:14px;height:14px;font-size:7px;${phaseDotStyle(rp)}">${l}</div>`;}).join('');
+    const railDots=['P','S','W'].map((l,i)=>{const ph=g.phases?.[i];const{done:rd,total:rt}=ph?phaseProgress(ph):{done:0,total:0};const rp=rt?Math.round(rd/rt*100):0;return`<div class="gig-phase-dot" style="width:14px;height:14px;font-size:7px;${phaseDotStyle(rp,rt)}">${l}</div>`;}).join('');
     html+=`<div class="gig-rail-item${active?' active':''}" onclick="openGig('${g.id}')">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div class="gig-phase-dots">${railDots}</div><div class="gig-rail-name" style="margin-bottom:0">${escHtml(g.name)}</div></div>
       <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' kits':''}</div>
@@ -1475,7 +1475,8 @@ function renderItem(item,showShared){
   </div>
 </div>`;
 }
-function phaseDotStyle(pct){
+function phaseDotStyle(pct,total){
+  if(total===0)return'background:var(--surface2);border-color:var(--border);color:var(--border2)';
   if(pct===100)return'background:var(--green);border-color:var(--green);color:#fff';
   if(pct>0)return'background:var(--orange);border-color:var(--orange);color:#fff';
   return'';
@@ -1506,7 +1507,7 @@ function updateClProgress(){
   }
   // Mobile P/S/W dots in header
   const mobileDots=document.getElementById('clPhaseDots');
-  if(mobileDots)mobileDots.innerHTML=labels.map((l,i)=>{const p=phases[i]?.pct||0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p)}">${l}</div>`;}).join('');
+  if(mobileDots)mobileDots.innerHTML=labels.map((l,i)=>{const p=phases[i]?.pct||0;const t=phases[i]?.total??-1;return`<div class="gig-phase-dot" style="${phaseDotStyle(p,t)}">${l}</div>`;}).join('');
   // Desktop column bars + stats + rail dots — all phases every time
   phases.forEach(({pi,done,total,pct})=>{
     const bar=document.getElementById('dtbar_'+pi);
@@ -1517,7 +1518,7 @@ function updateClProgress(){
   // Rail dots for active gig
   document.querySelectorAll('#gigRail .gig-rail-item.active .gig-phase-dot').forEach((dot,i)=>{
     if(i>=phases.length)return;
-    dot.setAttribute('style',phaseDotStyle(phases[i].pct));
+    dot.setAttribute('style',phaseDotStyle(phases[i].pct,phases[i].total));
   });
 }
 function renderPhaseContent(){
