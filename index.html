@@ -1171,10 +1171,11 @@ function _onTplUp(e){
 }
 function renderKitGrid(){
   document.getElementById('kitGrid').innerHTML=orderedTemplates().map(t=>`
-<div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')" onpointerdown="startTplDrag(event,'${t.id}')">
+<div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')">
   <div class="kit-card-check">${svgCheck(9)}</div>
   <div class="kit-card-name">${escHtml(t.name)}</div>
   <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?c.title:''}).filter(Boolean).join(' · ')}</div>
+  <span class="kit-drag-handle" onpointerdown="event.stopPropagation();startTplDrag(event,'${t.id}')" onclick="event.stopPropagation()">⋮⋮</span>
 </div>`).join('');
 }
 function toggleKit(id){selectedKitIds.has(id)?selectedKitIds.delete(id):selectedKitIds.add(id);document.getElementById('kitcard_'+id)?.classList.toggle('selected',selectedKitIds.has(id));updateBuildBar();}
