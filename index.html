@@ -141,7 +141,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 
 .tpl-kit-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
 .tpl-kit-row{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;}
-.drag-handle{color:var(--border2);font-size:13px;letter-spacing:-1px;flex-shrink:0;}
+.drag-handle{color:var(--border2);font-size:13px;letter-spacing:-1px;flex-shrink:0;touch-action:none;cursor:grab;}
 .tpl-kit-name{flex:1;font-size:13px;color:var(--text);}
 .tpl-kit-count{font-size:12px;color:var(--text-muted);flex-shrink:0;}
 .row-remove{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;display:flex;align-items:center;}
@@ -458,7 +458,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <div class="confirm-overlay" id="confirmOverlay" style="display:none" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-sheet">
     <div class="confirm-msg" id="confirmMsg"></div>
-    <button class="confirm-btn danger" onclick="runConfirm()">Delete</button>
+    <button class="confirm-btn danger" id="confirmOkBtn" onclick="runConfirm()">Delete</button>
     <button class="confirm-btn cancel" onclick="closeConfirm()">Cancel</button>
   </div>
 </div>
@@ -716,8 +716,13 @@ function showSyncModal(step){
 }
 function closeSyncModal(){document.getElementById('syncModalOverlay').style.display='none';}
 
+// Prevent iOS scroll from swallowing drag-handle touches before pointer events fire
+document.addEventListener('touchstart', e => {
+  if (e.target.closest('.drag-handle')) e.preventDefault();
+}, {passive: false});
+
 let _confirmCb=null;
-function appConfirm(msg,onYes){_confirmCb=onYes;document.getElementById('confirmMsg').textContent=msg;document.getElementById('confirmOverlay').style.display='flex';}
+function appConfirm(msg,onYes,okLabel){_confirmCb=onYes;document.getElementById('confirmMsg').textContent=msg;document.getElementById('confirmOkBtn').textContent=okLabel||'Delete';document.getElementById('confirmOverlay').style.display='flex';}
 function closeConfirm(){document.getElementById('confirmOverlay').style.display='none';_confirmCb=null;}
 function runConfirm(){const cb=_confirmCb;closeConfirm();cb&&cb();}
 
@@ -998,6 +1003,7 @@ function _onTplMove(e){
 let _listDrag=null;
 function startListItemDrag(e,catId,routineKey,idx){
   e.preventDefault();e.stopPropagation();
+  try{e.target.setPointerCapture(e.pointerId);}catch(_){}
   const row=e.target.closest('.kit-item-row,.step-row');if(!row)return;
   const rect=row.getBoundingClientRect();
   const ghost=row.cloneNode(true);ghost.removeAttribute('id');
@@ -1047,8 +1053,8 @@ function _onListUp(e){
   document.removeEventListener('pointermove',_onListMove);
   document.removeEventListener('pointerup',_onListUp);
   document.removeEventListener('pointercancel',_onListCancel);
-  _listDrag=null;
   const nearest=_nearestRow(ghostCy,idx);
+  _listDrag=null;
   if(!nearest||nearest.idx===idx)return;
   const cat=getCat(catId);if(!cat)return;
   const arr=routineKey?cat[routineKey]:cat.items;
@@ -1060,6 +1066,7 @@ function _onListUp(e){
 let _packDrag=null;
 function startPackRowDrag(e,tplId,idx){
   e.preventDefault();e.stopPropagation();
+  try{e.target.setPointerCapture(e.pointerId);}catch(_){}
   const row=e.target.closest('.tpl-kit-row');if(!row)return;
   const rect=row.getBoundingClientRect();
   const ghost=row.cloneNode(true);
@@ -1348,8 +1355,8 @@ function renderLibKit(cat){
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">PACKING <span style="color:var(--text-muted);font-weight:400">${cat.items.length}</span></div>
         <div class="kit-items-list" id="kitlist_${cat.id}">
-          ${cat.items.map((item,ii)=>`<div class="kit-item-row ${item.shared?'shared-on':''}" onpointerdown="if(!event.target.closest('.row-remove,.shared-toggle,.kit-item-input'))startListItemDrag(event,'${cat.id}',null,${ii})">
-            <span class="drag-handle">⋮⋮</span>
+          ${cat.items.map((item,ii)=>`<div class="kit-item-row ${item.shared?'shared-on':''}">
+            <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
             ${item.shared?`<span class="kit-item-bang">!</span>`:''}
             <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
             <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
@@ -1361,14 +1368,14 @@ function renderLibKit(cat){
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">SETUP <span style="color:var(--text-muted);font-weight:400">${(cat.setup||[]).length}</span></div>
         <div id="kitlist_setup_${cat.id}">
-          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','setup',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>
       </div>
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">WRAP <span style="color:var(--text-muted);font-weight:400">${(cat.teardown||[]).length}</span></div>
         <div id="kitlist_teardown_${cat.id}">
-          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','teardown',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>
       </div>
@@ -1376,8 +1383,8 @@ function renderLibKit(cat){
     :rtab==='packing'?`
     <div class="kit-items-list" id="kitlist_${cat.id}">
       ${cat.items.map((item,ii)=>`
-      <div class="kit-item-row ${item.shared?'shared-on':''}" onpointerdown="if(!event.target.closest('.row-remove,.shared-toggle,.kit-item-input'))startListItemDrag(event,'${cat.id}',null,${ii})">
-        <span class="drag-handle">⋮⋮</span>
+      <div class="kit-item-row ${item.shared?'shared-on':''}">
+        <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
         <span class="kit-shared-label ${item.shared?'on':'off'}" style="${item.shared?'':'visibility:hidden'}">IMPORTANT</span>
@@ -1389,13 +1396,13 @@ function renderLibKit(cat){
     <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>`
     :rtab==='setup'?`
     <div id="kitlist_${cat.id}">
-      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','setup',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps that run at location when this kit is deployed. Appears in the gig's Setup tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>`
     :`
     <div id="kitlist_${cat.id}">
-      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','teardown',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps for striking this kit. Appears in the gig's Wrap tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>`}
@@ -1457,9 +1464,10 @@ function saveCatAndPropagate(catId){
   const cat=getCat(catId);if(!cat)return;
   const aff=appState.gigs.filter(g=>g.phases?.[0]?.categories?.some(c=>c.globalCatId===catId));
   if(!aff.length){showToast('Kit saved');return;}
-  if(!confirm(`Update "${cat.title}" in ${aff.length} existing gig${aff.length>1?'s':''}?\n\nChecked items will be reset.`))return;
-  aff.forEach(g=>{const pc=g.phases[0].categories.find(c=>c.globalCatId===catId);if(pc){pc.title=cat.title;pc.items=cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?/^lav mics/i.test(item):!!item.shared}));}});
-  saveState();showToast(`Updated ${aff.length} gig${aff.length>1?'s':''}`);
+  appConfirm(`Update "${cat.title}" in ${aff.length} existing gig${aff.length>1?'s':''}? Checked items will be reset.`,()=>{
+    aff.forEach(g=>{const pc=g.phases[0].categories.find(c=>c.globalCatId===catId);if(pc){pc.title=cat.title;pc.items=cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?/^lav mics/i.test(item):!!item.shared}));}});
+    saveState();showToast(`Updated ${aff.length} gig${aff.length>1?'s':''}`);
+  });
 }
 
 // long press
@@ -1483,6 +1491,7 @@ function beginRenameTplKit(tplId,catId){
 let _libDrag=null;
 function startLibDrag(e,id,type){
   e.preventDefault();
+  try{e.target.setPointerCapture(e.pointerId);}catch(_){}
   const item=document.getElementById('libitem_'+id);if(!item)return;
   const rect=item.getBoundingClientRect();
   const ghost=item.cloneNode(true);ghost.removeAttribute('id');
@@ -1545,7 +1554,7 @@ function _onLibDragUp(e){
   } else {
     const[moved]=appState.categories.splice(fromIdx,1);appState.categories.splice(toIdx,0,moved);
   }
-  saveState();openLibId=id;renderLibraryScreen();
+  saveState();renderLibraryScreen();
 }
 function beginRenameLibTpl(tplId){
   const tpl=getTpl(tplId);if(!tpl)return;
@@ -1757,7 +1766,7 @@ function addItem(catId){if(editingItem)commitEditItem();const cat=findCat(catId)
 function deleteItem(id){const f=findItem(id);if(!f)return;appConfirm(`Delete "${f.item.text}"?`,()=>{f.cat.items=f.cat.items.filter(i=>i.id!==id);saveState();renderPhaseContent();});}
 function deleteCategory(catId){const gig=getActiveGig();if(!gig)return;const cat=findCat(catId);if(!cat)return;appConfirm(`Delete kit "${cat.title}" and all its items?`,()=>{gig.phases.forEach(p=>{p.categories=p.categories.filter(c=>c.id!==catId);});saveState();renderPhaseContent();});}
 function addCategory(phaseIdx){const gig=getActiveGig();const pi=phaseIdx!==undefined?phaseIdx:activePhaseIdx;const phase=gig.phases[pi];const nc={id:uid(),title:'New Kit',items:[{id:uid(),text:'First item',checked:false,note:'',shared:false}],expanded:true};phase.categories.push(nc);saveState();renderPhaseContent();setTimeout(()=>startEditCat(nc.id),40);}
-function resetPhase(pi){if(!confirm('Uncheck all items in this phase?'))return;const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();}
+function resetPhase(pi){appConfirm('Uncheck all items in this phase?',()=>{const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();},'Reset');}
 function checkAllPhase(pi){const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=true));saveState();renderPhaseContent();}
 
 document.getElementById('clGigName').addEventListener('click',()=>{const gig=getActiveGig();if(!gig)return;const inp=document.getElementById('clGigNameInput'),disp=document.getElementById('clGigName');inp.value=gig.name;disp.style.display='none';inp.style.display='';inp.focus();inp.select();});
@@ -1780,7 +1789,7 @@ function renderSettingsScreen(){
   const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   const syncBtnLabel=syncUser&&isPremiumUser?'✓ Active':syncUser?'Upgrade':'Set up';
   const syncBtnColor=syncUser&&isPremiumUser?'var(--green)':'var(--blue)';
-  const syncSubText=syncUser&&isPremiumUser?'Syncing automatically':syncUser?'Subscribe to activate sync':'Subscribe to enable sync across multiple devices';
+  const syncSubText=syncUser&&isPremiumUser?'Syncing automatically':syncUser?'Subscribe to activate sync':'$1/year subscription to sync across multiple devices';
   const syncModalTarget=syncUser&&isPremiumUser?'active':syncUser?'premium':'signin';
   const initials=(syncUser?.displayName||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
   const photoHtml=syncUser?.photoURL?`<img src="${escHtml(syncUser.photoURL)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:11px;font-weight:600;color:var(--blue)">${initials}</span>`;
