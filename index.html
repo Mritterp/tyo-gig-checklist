@@ -104,7 +104,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .kit-card.selected{border:1.5px solid var(--green-border);background:var(--green-dim);border-radius:12px;}
 .kit-card.dragging{opacity:0.35;border-style:dashed;}
 .kit-card.drag-over{border-color:var(--blue);background:var(--blue-dim,#E8F0FE);}
-.kit-item-row.drag-over,.step-row.drag-over,.tpl-kit-row.drag-over{border-color:var(--blue);background:var(--blue-dim);}
+.kit-item-row.drag-over,.step-row.drag-over,.tpl-kit-row.drag-over,.lib-item.drag-over{border-color:var(--blue);background:var(--blue-dim);}
 .kit-card-check{position:absolute;top:7px;right:7px;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;background:var(--surface);transition:all .15s;}
 .kit-card.selected .kit-card-check{background:var(--green);border-color:var(--green);}
 .kit-card-check svg{display:none;}
@@ -1303,7 +1303,7 @@ function switchLibTab(tab){libraryTab=tab;openLibId=null;renderLibraryScreen();}
 function renderLibTpl(tpl){
   const open=openLibId===tpl.id;
   return`<div class="lib-item ${open?'open':''}" id="libitem_${tpl.id}">
-  <div class="lib-item-hdr" onclick="toggleLibItem('${tpl.id}')" onpointerdown="startLPTpl(event,'${tpl.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
+  <div class="lib-item-hdr" onpointerdown="startLibDrag(event,'${tpl.id}','tpl')">
     <span class="lib-item-name" id="libname_${tpl.id}">${escHtml(tpl.name)}</span>
     <span class="lib-item-right">${open?'long-press to rename':'›'}</span>
   </div>
@@ -1324,7 +1324,7 @@ function renderLibTpl(tpl){
 </div>`;
 }
 function renderTplRows(tpl){
-  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row"><span class="drag-handle" onpointerdown="startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
+  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row" onpointerdown="if(!event.target.closest('.row-remove'))startPackRowDrag(event,'${tpl.id}',${ii})"><span class="drag-handle">⋮⋮</span><span class="tpl-kit-name">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
 }
 
 function renderLibKit(cat){
@@ -1332,7 +1332,7 @@ function renderLibKit(cat){
   const rtab=kitRoutineTab[cat.id]||'packing';
   const totalItems=`${cat.items.length} items`;
   return`<div class="lib-item ${open?'open':''}" id="libitem_${cat.id}">
-  <div class="lib-item-hdr" onclick="toggleLibItem('${cat.id}')" onpointerdown="startLPKit(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
+  <div class="lib-item-hdr" onpointerdown="startLibDrag(event,'${cat.id}','kit')">
     <span class="lib-item-name">${escHtml(cat.title)}</span>
     <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
@@ -1346,8 +1346,8 @@ function renderLibKit(cat){
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">PACKING <span style="color:var(--text-muted);font-weight:400">${cat.items.length}</span></div>
         <div class="kit-items-list" id="kitlist_${cat.id}">
-          ${cat.items.map((item,ii)=>`<div class="kit-item-row ${item.shared?'shared-on':''}">
-            <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
+          ${cat.items.map((item,ii)=>`<div class="kit-item-row ${item.shared?'shared-on':''}" onpointerdown="if(!event.target.closest('.row-remove,.shared-toggle,.kit-item-input'))startListItemDrag(event,'${cat.id}',null,${ii})">
+            <span class="drag-handle">⋮⋮</span>
             ${item.shared?`<span class="kit-item-bang">!</span>`:''}
             <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
             <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
@@ -1359,14 +1359,14 @@ function renderLibKit(cat){
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">SETUP <span style="color:var(--text-muted);font-weight:400">${(cat.setup||[]).length}</span></div>
         <div id="kitlist_setup_${cat.id}">
-          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','setup',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>
       </div>
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">WRAP <span style="color:var(--text-muted);font-weight:400">${(cat.teardown||[]).length}</span></div>
         <div id="kitlist_teardown_${cat.id}">
-          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','teardown',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>
       </div>
@@ -1374,8 +1374,8 @@ function renderLibKit(cat){
     :rtab==='packing'?`
     <div class="kit-items-list" id="kitlist_${cat.id}">
       ${cat.items.map((item,ii)=>`
-      <div class="kit-item-row ${item.shared?'shared-on':''}">
-        <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
+      <div class="kit-item-row ${item.shared?'shared-on':''}" onpointerdown="if(!event.target.closest('.row-remove,.shared-toggle,.kit-item-input'))startListItemDrag(event,'${cat.id}',null,${ii})">
+        <span class="drag-handle">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
         <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
         <span class="kit-shared-label ${item.shared?'on':'off'}" style="${item.shared?'':'visibility:hidden'}">IMPORTANT</span>
@@ -1387,13 +1387,13 @@ function renderLibKit(cat){
     <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>`
     :rtab==='setup'?`
     <div id="kitlist_${cat.id}">
-      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','setup',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps that run at location when this kit is deployed. Appears in the gig's Setup tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>`
     :`
     <div id="kitlist_${cat.id}">
-      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row" onpointerdown="if(!event.target.closest('.row-remove,.step-input'))startListItemDrag(event,'${cat.id}','teardown',${ii})"><span class="drag-handle">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps for striking this kit. Appears in the gig's Wrap tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>`}
@@ -1464,6 +1464,93 @@ function saveCatAndPropagate(catId){
 function cancelLP(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}}
 function startLPTpl(e,id){cancelLP();_lpTimer=setTimeout(()=>{_lpTimer=null;beginRenameLibTpl(id);},500);}
 function startLPKit(e,id){cancelLP();_lpTimer=setTimeout(()=>{_lpTimer=null;beginRenameLibKit(id);},500);}
+
+// Library item drag-to-reorder (tap=open/close, long-press=rename, drag=reorder)
+let _libDrag=null;
+function startLibDrag(e,id,type){
+  if(e.target.closest('.lib-delete,.lib-save,.tpl-add-row,.row-remove,.seg-ctrl,.lib-add-btn,.lib-item-body'))return;
+  cancelLP();
+  const item=document.getElementById('libitem_'+id);if(!item)return;
+  _lpTimer=setTimeout(()=>{
+    _lpTimer=null;
+    if(_libDrag&&!_libDrag.active){type==='tpl'?beginRenameLibTpl(id):beginRenameLibKit(id);}
+  },600);
+  _libDrag={id,type,startX:e.clientX,startY:e.clientY,active:false,item,ghost:null,oy:0,gh:0,lastY:e.clientY};
+  document.addEventListener('pointermove',_onLibDragMove,{passive:false});
+  document.addEventListener('pointerup',_onLibDragUp);
+  document.addEventListener('pointercancel',_onLibDragCancel);
+}
+function _nearestLibItem(y,excludeId){
+  let best=null,bestDist=Infinity;
+  document.querySelectorAll('#libMain .lib-item').forEach(r=>{
+    if(r.id==='libitem_'+excludeId)return;
+    const rc=r.getBoundingClientRect();const cy=rc.top+rc.height/2;const dist=Math.abs(y-cy);
+    if(dist<bestDist){bestDist=dist;best=r;}
+  });
+  return best;
+}
+function _onLibDragMove(e){
+  if(!_libDrag)return;
+  const dx=e.clientX-_libDrag.startX,dy=e.clientY-_libDrag.startY;
+  if(!_libDrag.active){
+    if(Math.hypot(dx,dy)<8)return;
+    cancelLP();
+    const rect=_libDrag.item.getBoundingClientRect();
+    const ghost=_libDrag.item.cloneNode(true);ghost.removeAttribute('id');
+    ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.85;z-index:999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2);border-radius:12px;`;
+    document.body.appendChild(ghost);
+    _libDrag.item.style.opacity='0.35';
+    _libDrag.oy=e.clientY-rect.top;_libDrag.gh=rect.height;_libDrag.ghost=ghost;_libDrag.active=true;
+  }
+  e.preventDefault();
+  _libDrag.lastY=e.clientY;
+  _libDrag.ghost.style.top=(e.clientY-_libDrag.oy)+'px';
+  const ghostCy=e.clientY-_libDrag.oy+_libDrag.gh/2;
+  document.querySelectorAll('#libMain .lib-item').forEach(r=>r.classList.remove('drag-over'));
+  const nearest=_nearestLibItem(ghostCy,_libDrag.id);
+  if(nearest)nearest.classList.add('drag-over');
+}
+function _onLibDragCancel(){
+  if(!_libDrag)return;
+  cancelLP();
+  if(_libDrag.ghost)_libDrag.ghost.remove();
+  _libDrag.item.style.opacity='';
+  document.querySelectorAll('.lib-item').forEach(r=>r.classList.remove('drag-over'));
+  document.removeEventListener('pointermove',_onLibDragMove);
+  document.removeEventListener('pointerup',_onLibDragUp);
+  document.removeEventListener('pointercancel',_onLibDragCancel);
+  _libDrag=null;
+}
+function _onLibDragUp(e){
+  if(!_libDrag)return;
+  const{id,type,active,item,ghost,lastY,oy,gh}=_libDrag;
+  cancelLP();
+  document.removeEventListener('pointermove',_onLibDragMove);
+  document.removeEventListener('pointerup',_onLibDragUp);
+  document.removeEventListener('pointercancel',_onLibDragCancel);
+  if(!active){
+    _libDrag=null;
+    toggleLibItem(id);
+    return;
+  }
+  const ghostCy=(e?.clientY??lastY)-oy+gh/2;
+  ghost.remove();item.style.opacity='';
+  document.querySelectorAll('.lib-item').forEach(r=>r.classList.remove('drag-over'));
+  const allItems=[...document.querySelectorAll('#libMain .lib-item')];
+  const fromIdx=allItems.findIndex(r=>r.id==='libitem_'+id);
+  const nearest=_nearestLibItem(ghostCy,id);
+  _libDrag=null;
+  if(!nearest||fromIdx===-1)return;
+  const toIdx=allItems.findIndex(r=>r===nearest);
+  if(fromIdx===toIdx||toIdx===-1)return;
+  if(type==='tpl'){
+    const[moved]=appState.templates.splice(fromIdx,1);appState.templates.splice(toIdx,0,moved);
+    if(appState.templateOrder){const[mid]=appState.templateOrder.splice(fromIdx,1);appState.templateOrder.splice(toIdx,0,mid);}
+  } else {
+    const[moved]=appState.categories.splice(fromIdx,1);appState.categories.splice(toIdx,0,moved);
+  }
+  saveState();openLibId=id;renderLibraryScreen();
+}
 function beginRenameLibTpl(tplId){
   const tpl=getTpl(tplId);if(!tpl)return;
   const span=document.getElementById('libname_'+tplId);if(!span)return;
