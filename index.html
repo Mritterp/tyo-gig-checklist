@@ -1515,11 +1515,25 @@ function updateClProgress(){
     const lbl=bar?.closest('.dt-phase-col')?.querySelector('.phase-stats');
     if(lbl){lbl.textContent=done+'/'+total;lbl.className='phase-stats'+(pct===100?' complete':'');}
   });
-  // Rail dots for active gig
+  // Rail dots + bar for active gig
   document.querySelectorAll('#gigRail .gig-rail-item.active .gig-phase-dot').forEach((dot,i)=>{
     if(i>=phases.length)return;
     dot.setAttribute('style',phaseDotStyle(phases[i].pct,phases[i].total));
   });
+  const activeRailItem=document.querySelector('#gigRail .gig-rail-item.active');
+  if(activeRailItem){
+    const railFill=activeRailItem.querySelector('.gig-rail-bar-fill');
+    if(railFill){
+      railFill.style.width=totalPct+'%';
+      railFill.style.background=totalPct===100?'var(--green)':totalPct>0?'var(--orange)':'var(--surface3)';
+    }
+    const railMeta=activeRailItem.querySelector('.gig-rail-meta');
+    if(railMeta){
+      const gig=getActiveGig();
+      const ds=gig?.date?new Date(gig.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+      railMeta.textContent=(ds?ds+' · ':'')+totalDone+' / '+totalAll+' items';
+    }
+  }
 }
 function renderPhaseContent(){
   const gig=getActiveGig();if(!gig)return;
