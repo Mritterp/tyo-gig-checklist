@@ -415,8 +415,8 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 .tsz-btn{flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text-muted);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
 .tsz-btn.active{border-color:var(--blue);background:var(--blue);color:#fff;}
 /* CONFIRM DIALOG */
-.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
-.confirm-sheet{background:var(--surface);border-radius:16px 16px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px;}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.confirm-sheet{background:var(--surface);border-radius:16px;padding:24px 20px;width:calc(100% - 48px);max-width:360px;display:flex;flex-direction:column;gap:10px;}
 .confirm-msg{font-size:15px;color:var(--text);text-align:center;padding:4px 0 8px;line-height:1.4;}
 .confirm-btn{padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;}
 .confirm-btn.danger{background:var(--danger);color:#fff;}
