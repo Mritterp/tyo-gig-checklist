@@ -1368,7 +1368,7 @@ function updateRoutineStep(catId,routineKey,idx,val){
 
 // template ops
 function addCatToTpl(tplId){const sel=document.getElementById('tplsel_'+tplId);if(!sel||!sel.value)return;const tpl=getTpl(tplId);if(!tpl)return;if(!(tpl.categoryIds||[]).includes(sel.value)){(tpl.categoryIds=tpl.categoryIds||[]).push(sel.value);}saveState();openLibId=tplId;renderLibraryScreen();}
-function removeCatFromTpl(tplId,catId){const tpl=getTpl(tplId);if(!tpl)return;tpl.categoryIds=(tpl.categoryIds||[]).filter(id=>id!==catId);saveState();openLibId=tplId;renderLibraryScreen();}
+function removeCatFromTpl(tplId,catId){const tpl=getTpl(tplId);const cat=getCat(catId);if(!tpl)return;appConfirm(`Remove "${cat?.title||'this kit'}" from "${tpl.name}"?`,()=>{tpl.categoryIds=(tpl.categoryIds||[]).filter(id=>id!==catId);saveState();openLibId=tplId;renderLibraryScreen();});}
 function saveTpl(tplId){saveState();showToast('Pack saved');}
 function deleteTpl(tplId){const tpl=getTpl(tplId);appConfirm(`Delete pack "${tpl?.name||'this pack'}"?`,()=>{appState.templates=appState.templates.filter(t=>t.id!==tplId);if(appState.templateOrder)appState.templateOrder=appState.templateOrder.filter(id=>id!==tplId);saveState();openLibId=null;renderLibraryScreen();});}
 function addTemplate(){const t={id:uid(),name:'New Pack',categoryIds:[]};appState.templates.push(t);if(appState.templateOrder)appState.templateOrder.push(t.id);saveState();openLibId=t.id;renderLibraryScreen();setTimeout(()=>beginRenameLibTpl(t.id),50);}
