@@ -1515,7 +1515,7 @@ function updateClProgress(){
     if(lbl){lbl.textContent=done+'/'+total;lbl.className='phase-stats'+(pct===100?' complete':'');}
   });
   // Rail dots for active gig
-  document.querySelectorAll('#gigRail .gig-phase-dot').forEach((dot,i)=>{
+  document.querySelectorAll('#gigRail .gig-rail-item.active .gig-phase-dot').forEach((dot,i)=>{
     if(i>=phases.length)return;
     dot.setAttribute('style',phaseDotStyle(phases[i].pct));
   });
