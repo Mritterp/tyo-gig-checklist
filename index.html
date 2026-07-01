@@ -691,12 +691,15 @@ async function loadFromCloud(forceCloud=false){
     if(!remote?.appData){syncToCloud();return;}
     const remoteTs=remote.updatedAt?.toMillis?.()??0;
     const localTs=appState._updatedAt||0;
-    if(forceCloud||remoteTs>localTs){
+    const cloudHasGigs=(remote.appData.gigs?.length||0)>0;
+    const localHasGigs=(appState.gigs?.length||0)>0;
+    const shouldPull=(forceCloud&&cloudHasGigs)||(!forceCloud&&remoteTs>localTs);
+    if(shouldPull){
       appState={...remote.appData,_updatedAt:remoteTs};
       localStorage.setItem('tyo_v5',JSON.stringify(appState));
       renderDashboard();
       showToast('Synced from cloud ☁');
-    }else{
+    }else if(localHasGigs||!cloudHasGigs){
       syncToCloud();
     }
   }catch(e){}
