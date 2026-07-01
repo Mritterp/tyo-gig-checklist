@@ -2113,6 +2113,7 @@ renderDashboard();
 setActiveTab('gigs');
 initFirebase();
 
+if(screen.orientation?.unlock){screen.orientation.unlock();}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&syncUser&&isPremiumUser){
     loadFromCloud(false);
