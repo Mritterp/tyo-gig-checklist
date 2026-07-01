@@ -596,23 +596,10 @@ function initFirebase(){
     _fbAuth=firebase.auth();
     _fbDb=firebase.firestore();
     _fbAuth.onAuthStateChanged(onAuthChanged);
-    _fbAuth.getRedirectResult().then(result=>{
-      if(result&&result.user){
-        showToast('DEBUG: redirect got user '+result.user.email);
-        const user=result.user;
-        checkPremiumStatus(user.uid).then(premium=>{
-          isPremiumUser=premium;
-          renderSyncModal(premium?'active':'premium');
-        });
-      }else{
-        showToast('DEBUG: getRedirectResult = no user');
-      }
-    }).catch(e=>{showToast('DEBUG: redirectErr '+e.code);console.warn('getRedirectResult:',e);});
   }catch(e){showToast('DEBUG: initErr '+e.message);console.warn('Firebase init:',e);}
 }
 
 async function onAuthChanged(user){
-  showToast('DEBUG: authChanged '+(user?user.email:'null'));
   syncUser=user;
   if(user){
     isPremiumUser=await checkPremiumStatus(user.uid);
@@ -639,13 +626,31 @@ async function checkPremiumStatus(uid){
   }catch(e){console.error('checkPremium error:',e);return false;}
 }
 
-function signInWithGoogle(){
+async function signInWithEmail(isCreate){
   if(!_fbAuth)return;
-  const provider=new firebase.auth.GoogleAuthProvider();
-  // Use redirect (works on GitHub Pages + mobile); popup blocked by COOP headers
-  _fbAuth.signInWithRedirect(provider).catch(e=>{
-    showToast('Sign-in failed. Try again.');
-  });
+  const emailEl=document.getElementById('syncEmailInput');
+  const passEl=document.getElementById('syncPassInput');
+  if(!emailEl||!passEl)return;
+  const email=emailEl.value.trim();
+  const pass=passEl.value;
+  if(!email||!pass){showToast('Enter your email and password.');return;}
+  try{
+    if(isCreate){
+      await _fbAuth.createUserWithEmailAndPassword(email,pass);
+    }else{
+      await _fbAuth.signInWithEmailAndPassword(email,pass);
+    }
+    closeSyncModal();
+  }catch(e){
+    const msg={
+      'auth/user-not-found':'No account with that email. Try "Create account".',
+      'auth/wrong-password':'Incorrect password.',
+      'auth/email-already-in-use':'Account already exists. Try "Sign in".',
+      'auth/weak-password':'Password must be at least 6 characters.',
+      'auth/invalid-email':'Enter a valid email address.',
+    }[e.code]||e.message||'Sign-in failed.';
+    showToast(msg);
+  }
 }
 
 function signOutSync(){
@@ -762,9 +767,14 @@ function renderSyncModal(step){
 <div class="sync-modal-sub">Keep your gig checklists up to date on every device — automatically.</div>
 <div class="sync-modal-features">
   <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💰</div><div class="sync-modal-feature-text"><strong>Why $1/year?</strong> Syncing requires servers running 24/7. This subscription covers those infrastructure costs.</div></div>
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text">Synced data is tied to your Google account so changes appear across your phone, tablet, or desktop.</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text">Synced data is tied to your account so changes appear across your phone, tablet, or desktop.</div></div>
 </div>
-<button class="sync-modal-cta" onclick="signInWithGoogle()">Sign in with Google to continue</button>
+<div style="display:flex;flex-direction:column;gap:10px;margin:16px 0 4px">
+  <input id="syncEmailInput" type="email" placeholder="Email" autocomplete="email" style="padding:11px 14px;border-radius:10px;border:1.5px solid var(--border1);background:var(--bg2);color:var(--text);font-size:15px;outline:none;">
+  <input id="syncPassInput" type="password" placeholder="Password (min 6 characters)" autocomplete="current-password" style="padding:11px 14px;border-radius:10px;border:1.5px solid var(--border1);background:var(--bg2);color:var(--text);font-size:15px;outline:none;">
+</div>
+<button class="sync-modal-cta" onclick="signInWithEmail(false)">Sign in</button>
+<button class="sync-modal-cta" onclick="signInWithEmail(true)" style="background:var(--bg2);color:var(--blue);border:1.5px solid var(--blue);margin-top:6px">Create account</button>
 <button class="sync-modal-skip" onclick="closeSyncModal()">Not now</button>`;
   }else if(step==='premium'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
