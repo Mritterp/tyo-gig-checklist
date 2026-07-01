@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.mritterp.twa",
-        "sha256_cert_fingerprints": ["AA:76:5E:75:E0:0B:BF:D0:B7:BD:C3:5C:AD:4B:80:2D:CF:73:B3:5B:6C:11:8D:C4:BF:2F:CF:10:78:44:20:B7"]
+        "sha256_cert_fingerprints": ["76:53:46:45:F0:CC:BC:E5:62:4C:B9:F8:DB:93:83:1C:A3:8E:3E:67:EA:89:98:78:3C:8B:A7:95:42:E5:57:21"]
       }
     }]
