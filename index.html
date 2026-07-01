@@ -612,15 +612,18 @@ async function onAuthChanged(user){
 }
 
 async function checkPremiumStatus(uid){
-  if(!_fbDb)return false;
+  if(!_fbDb){console.warn('checkPremium: no _fbDb');return false;}
   try{
+    console.log('checkPremium: reading users/'+uid);
     const doc=await _fbDb.collection('users').doc(uid).get();
+    console.log('checkPremium: doc.exists='+doc.exists, doc.exists?doc.data():'(none)');
     if(!doc.exists)return false;
     const sub=doc.data()?.premium;
+    console.log('checkPremium: premium=',JSON.stringify(sub));
     if(!sub||sub.status!=='active')return false;
     if(sub.expiresAt&&sub.expiresAt.toDate()<new Date())return false;
     return true;
-  }catch(e){return false;}
+  }catch(e){console.error('checkPremium error:',e);return false;}
 }
 
 function signInWithGoogle(){
