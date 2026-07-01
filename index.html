@@ -781,8 +781,8 @@ function renderSyncModal(step){
   <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text">Synced data is tied to your account so changes appear across your phone, tablet, or desktop.</div></div>
 </div>
 <div style="display:flex;flex-direction:column;gap:10px;margin:16px 0 4px">
-  <input id="syncEmailInput" type="email" placeholder="Email" autocomplete="email" style="padding:11px 14px;border-radius:10px;border:1.5px solid var(--border1);background:var(--bg2);color:var(--text);font-size:15px;outline:none;">
-  <input id="syncPassInput" type="password" placeholder="Password (min 6 characters)" autocomplete="current-password" style="padding:11px 14px;border-radius:10px;border:1.5px solid var(--border1);background:var(--bg2);color:var(--text);font-size:15px;outline:none;">
+  <input id="syncEmailInput" type="email" placeholder="Email" autocomplete="email" style="padding:11px 14px;border-radius:10px;border:2px solid var(--border2);background:var(--bg);color:var(--text);font-size:15px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border2)'">
+  <input id="syncPassInput" type="password" placeholder="Password (min 6 characters)" autocomplete="current-password" style="padding:11px 14px;border-radius:10px;border:2px solid var(--border2);background:var(--bg);color:var(--text);font-size:15px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border2)'">
 </div>
 <button class="sync-modal-cta" onclick="signInWithEmail(false)">Sign in</button>
 <button class="sync-modal-cta" onclick="signInWithEmail(true)" style="background:var(--bg2);color:var(--blue);border:1.5px solid var(--blue);margin-top:6px">Create account</button>
