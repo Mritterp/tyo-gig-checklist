@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Install Gig Checklist</title>
+<title>Install Production Checklist</title>
 <link rel="manifest" href="/tyo-gig-checklist/manifest.json">
 <meta name="theme-color" content="#1A73E8">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -66,7 +66,7 @@ h1{font-size:28px;font-weight:700;text-align:center;margin-bottom:8px;font-famil
   </svg>
 </div>
 
-<h1>Gig Checklist</h1>
+<h1>Production Checklist</h1>
 <p class="subtitle">Pack the right gear for every gig.</p>
 
 <div id="content"></div>
@@ -93,10 +93,10 @@ function renderContent() {
   if (isStandalone) {
     el.innerHTML = `
       <div class="already">
-        <div class="already-icon">✅</div>
+        <div class="already-icon">âœ…</div>
         <h2>Already Installed!</h2>
-        <p>Gig Checklist is on your home screen and ready to go.</p>
-        <a class="open-btn" href="${APP_URL}">Open App →</a>
+        <p>Production Checklist is on your home screen and ready to go.</p>
+        <a class="open-btn" href="${APP_URL}">Open App â†’</a>
       </div>`;
     return;
   }
@@ -104,8 +104,8 @@ function renderContent() {
   if (deferredPrompt) {
     el.innerHTML = `
       <div class="android-card">
-        <h2>Install Gig Checklist</h2>
-        <p>Add it to your home screen for quick access — works offline too.</p>
+        <h2>Install Production Checklist</h2>
+        <p>Add it to your home screen for quick access â€” works offline too.</p>
         <button class="install-btn" id="installBtn">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v13M7 11l5 5 5-5"/><path d="M3 19h18"/>
@@ -119,10 +119,10 @@ function renderContent() {
       if (outcome === 'accepted') {
         document.getElementById('content').innerHTML = `
           <div class="already">
-            <div class="already-icon">🎉</div>
+            <div class="already-icon">ðŸŽ‰</div>
             <h2>Installed!</h2>
-            <p>Find Gig Checklist on your home screen.</p>
-            <a class="open-btn" href="${APP_URL}">Open App →</a>
+            <p>Find Production Checklist on your home screen.</p>
+            <a class="open-btn" href="${APP_URL}">Open App â†’</a>
           </div>`;
       }
       deferredPrompt = null;
@@ -131,7 +131,7 @@ function renderContent() {
   }
 
   if (isIOS) {
-    const safariNote = isSafari ? '' : '<div class="browser-note">⚠ Open this page in Safari to install</div>';
+    const safariNote = isSafari ? '' : '<div class="browser-note">âš  Open this page in Safari to install</div>';
     el.innerHTML = `
       <div class="ios-card">
         <h2>Install on iPhone</h2>
@@ -147,7 +147,7 @@ function renderContent() {
           <div class="step-num">1</div>
           <div class="step-text">
             <div class="step-title">Tap the Share button</div>
-            <div class="step-sub">The <strong>□↑</strong> icon at the bottom of Safari</div>
+            <div class="step-sub">The <strong>â–¡â†‘</strong> icon at the bottom of Safari</div>
           </div>
         </div>
         <div class="step">
@@ -161,7 +161,7 @@ function renderContent() {
           <div class="step-num">3</div>
           <div class="step-text">
             <div class="step-title">Tap Add</div>
-            <div class="step-sub">Gig Checklist will appear on your home screen</div>
+            <div class="step-sub">Production Checklist will appear on your home screen</div>
           </div>
         </div>
       </div>`;
@@ -172,8 +172,8 @@ function renderContent() {
     el.innerHTML = `
       <div class="android-card">
         <h2>Install on Android</h2>
-        <p>Open this page in <strong>Chrome</strong>, then tap the menu (⋮) and select <strong>"Add to Home Screen"</strong>.</p>
-        <a class="install-btn" href="${APP_URL}" style="text-decoration:none;">Open in Chrome →</a>
+        <p>Open this page in <strong>Chrome</strong>, then tap the menu (â‹®) and select <strong>"Add to Home Screen"</strong>.</p>
+        <a class="install-btn" href="${APP_URL}" style="text-decoration:none;">Open in Chrome â†’</a>
       </div>`;
     return;
   }
@@ -181,7 +181,7 @@ function renderContent() {
   el.innerHTML = `
     <div class="unsupported">
       <h2>Open on your phone</h2>
-      <p>Visit this URL on your phone to install Gig Checklist:</p>
+      <p>Visit this URL on your phone to install Production Checklist:</p>
       <div class="url-box">mritterp.github.io/tyo-gig-checklist</div>
     </div>`;
 }
@@ -192,10 +192,10 @@ renderContent();
 window.addEventListener('appinstalled', () => {
   document.getElementById('content').innerHTML = `
     <div class="already">
-      <div class="already-icon">🎉</div>
+      <div class="already-icon">ðŸŽ‰</div>
       <h2>Installed!</h2>
-      <p>Find Gig Checklist on your home screen.</p>
-      <a class="open-btn" href="${APP_URL}">Open App →</a>
+      <p>Find Production Checklist on your home screen.</p>
+      <a class="open-btn" href="${APP_URL}">Open App â†’</a>
     </div>`;
 });
 </script>
