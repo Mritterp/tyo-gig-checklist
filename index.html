@@ -596,6 +596,16 @@ function initFirebase(){
     _fbAuth=firebase.auth();
     _fbDb=firebase.firestore();
     _fbAuth.onAuthStateChanged(onAuthChanged);
+    // Handle redirect result (used instead of popup on mobile/GitHub Pages)
+    _fbAuth.getRedirectResult().then(result=>{
+      if(result&&result.user){
+        const user=result.user;
+        checkPremiumStatus(user.uid).then(premium=>{
+          isPremiumUser=premium;
+          renderSyncModal(premium?'active':'premium');
+        });
+      }
+    }).catch(e=>console.warn('getRedirectResult:',e));
   }catch(e){console.warn('Firebase init:',e);}
 }
 
@@ -629,16 +639,9 @@ async function checkPremiumStatus(uid){
 function signInWithGoogle(){
   if(!_fbAuth)return;
   const provider=new firebase.auth.GoogleAuthProvider();
-  _fbAuth.signInWithPopup(provider).then(result=>{
-    // onAuthChanged fires automatically
-    const user=result.user;
-    // After sign-in, check premium and advance modal
-    checkPremiumStatus(user.uid).then(premium=>{
-      isPremiumUser=premium;
-      renderSyncModal(premium?'active':'premium');
-    });
-  }).catch(e=>{
-    if(e.code!=='auth/popup-closed-by-user')showToast('Sign-in failed. Try again.');
+  // Use redirect (works on GitHub Pages + mobile); popup blocked by COOP headers
+  _fbAuth.signInWithRedirect(provider).catch(e=>{
+    showToast('Sign-in failed. Try again.');
   });
 }
 
