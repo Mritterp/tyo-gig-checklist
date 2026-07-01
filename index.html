@@ -627,10 +627,10 @@ async function checkPremiumStatus(uid){
 }
 
 async function signInWithEmail(isCreate){
-  if(!_fbAuth)return;
+  if(!_fbAuth){showToast('Auth not ready. Reload and try again.');return;}
   const emailEl=document.getElementById('syncEmailInput');
   const passEl=document.getElementById('syncPassInput');
-  if(!emailEl||!passEl)return;
+  if(!emailEl||!passEl){showToast('Form not found.');return;}
   const email=emailEl.value.trim();
   const pass=passEl.value;
   if(!email||!pass){showToast('Enter your email and password.');return;}
@@ -645,11 +645,13 @@ async function signInWithEmail(isCreate){
     const msg={
       'auth/user-not-found':'No account with that email. Try "Create account".',
       'auth/wrong-password':'Incorrect password.',
-      'auth/email-already-in-use':'Account already exists. Try "Sign in".',
+      'auth/email-already-in-use':'Account exists. Use "Sign in" instead.',
       'auth/weak-password':'Password must be at least 6 characters.',
       'auth/invalid-email':'Enter a valid email address.',
-    }[e.code]||e.message||'Sign-in failed.';
+      'auth/operation-not-allowed':'Email sign-in not enabled in Firebase Console.',
+    }[e.code]||e.message||('Error: '+e.code)||'Sign-in failed.';
     showToast(msg);
+    console.error('signInWithEmail:',e);
   }
 }
 
