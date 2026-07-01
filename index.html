@@ -312,7 +312,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .sb-brand{font-family:Georgia,'Times New Roman',serif;font-size:20px;color:var(--text);padding:0 22px 24px;border-bottom:1px solid var(--border);margin-bottom:8px;}
 .sb-item{padding:12px 22px;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--text-faint);cursor:pointer;border-left:3px solid transparent;transition:color .15s,background .15s;user-select:none;}
 .sb-item:hover{color:var(--text);}
-.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--blue-dim);}/* ===== DESKTOP (â‰¥1100px) ===== */
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--blue-dim);}/* ===== DESKTOP (≥1100px) ===== */
 @media(min-width:1100px){
   #sidebar{display:flex;}
   #globalTabBar{display:none;}
@@ -508,21 +508,21 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <!-- NEW GIG -->
 <div class="screen" id="screenNewGig">
   <div class="app-header">
-    <button class="back-btn" onclick="goBack('screenDash')">â† Dashboard</button>
+    <button class="back-btn" onclick="goBack('screenDash')">← Dashboard</button>
     <div class="brand" style="font-size:18px">New Gig</div>
     <div style="width:80px"></div>
   </div>
   <div class="form-main">
     <div class="field-group">
       <label class="field-label">Gig Name</label>
-      <input class="text-field" id="newGigName" placeholder="Client name, locationâ€¦" maxlength="80" autocomplete="off">
+      <input class="text-field" id="newGigName" placeholder="Client name, location…" maxlength="80" autocomplete="off">
     </div>
     <div class="field-group">
       <label class="field-label">Date</label>
       <input class="date-field" id="newGigDate" type="date" onclick="try{this.showPicker();}catch(e){}">
     </div>
     <div class="field-group">
-      <label class="field-label">Packs Â· Multi-Select</label>
+      <label class="field-label">Packs · Multi-Select</label>
       <div class="kit-grid" id="kitGrid"></div>
     </div>
     <div class="field-group">
@@ -533,14 +533,14 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
   </div>
   <div class="build-bar">
     <div class="build-summary" id="buildSummary">No packs selected</div>
-    <button class="build-btn" id="buildBtn" disabled onclick="buildGig()">Build Pack â†’</button>
+    <button class="build-btn" id="buildBtn" disabled onclick="buildGig()">Build Pack →</button>
   </div>
 </div>
 
 <!-- LIBRARY -->
 <div class="screen" id="screenLibrary">
   <div class="app-header">
-    <button class="back-btn" onclick="goBack('screenDash')">â† Dashboard</button>
+    <button class="back-btn" onclick="goBack('screenDash')">← Dashboard</button>
     <div class="brand" style="font-size:18px">Library</div>
     <div style="width:40px"></div>
   </div>
@@ -551,7 +551,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <!-- SETTINGS -->
 <div class="screen" id="screenSettings">
   <div class="app-header">
-    <button class="back-btn" onclick="goBack('screenDash')">â† Dashboard</button>
+    <button class="back-btn" onclick="goBack('screenDash')">← Dashboard</button>
     <div class="brand" style="font-size:18px">Settings</div>
     <div style="width:80px"></div>
   </div>
@@ -564,7 +564,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
   <div class="cl-content">
     <div class="cl-header">
       <div class="cl-top-row cl-back-row">
-        <button class="cl-back" onclick="goBack('screenDash')">â† All gigs</button>
+        <button class="cl-back" onclick="goBack('screenDash')">← All gigs</button>
         <span class="cl-date" id="clGigDate"></span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -584,7 +584,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 </div>
 
 <script>
-// â•â•â• FIREBASE / SYNC â•â•â•
+// ═══ FIREBASE / SYNC ═══
 // Fill in your Firebase project config from console.firebase.google.com
 const FIREBASE_CONFIG = {
   apiKey: 'AIzaSyDtrQF7BZUOna5h503w--iztfLyVEPgXdg',
@@ -594,7 +594,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: '471120180065',
   appId: '1:471120180065:web:1e188a56a629bbf5f0cb20'
 };
-// Subscription product ID â€” create this in Google Play Console
+// Subscription product ID — create this in Google Play Console
 const PLAY_PRODUCT_ID = 'premium_yearly';
 const KIT_COLORS=[
   {id:'tomato',hex:'#D50000'},
@@ -613,7 +613,7 @@ function catColorHex(cat){
 }
 function colorDot(hex,size=10){return hex?`<span style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${hex};flex-shrink:0;margin-right:5px"></span>`:'';}
 function renderColorPicker(catId,currentColor){
-  const none=`<div class="kit-color-swatch kit-color-none${!currentColor?' sel':''}" onclick="setKitColor('${catId}',null)" title="No color">âœ•</div>`;
+  const none=`<div class="kit-color-swatch kit-color-none${!currentColor?' sel':''}" onclick="setKitColor('${catId}',null)" title="No color">✕</div>`;
   return`<div class="kit-color-picker">${none}${KIT_COLORS.map(c=>`<div class="kit-color-swatch${currentColor===c.id?' sel':''}" style="background:${c.hex}" onclick="setKitColor('${catId}','${c.id}')" title="${c.id}"></div>`).join('')}</div>`;
 }
 function setKitColor(catId,colorId){
@@ -696,7 +696,7 @@ async function sendPasswordReset(){
   if(!email){showToast('Enter your email first.');return;}
   try{
     await _fbAuth.sendPasswordResetEmail(email);
-    showToast('Reset email sent â€” check your inbox.');
+    showToast('Reset email sent — check your inbox.');
   }catch(e){
     showToast(e.message||'Could not send reset email.');
   }
@@ -736,7 +736,7 @@ async function loadFromCloud(forceCloud=false){
       appState={...remote.appData,_updatedAt:remoteTs};
       localStorage.setItem('tyo_v5',JSON.stringify(appState));
       renderDashboard();
-      showToast('Synced from cloud â˜');
+      showToast('Synced from cloud ☁');
     }else if(localHasGigs||!cloudHasGigs){
       syncToCloud();
     }
@@ -746,7 +746,7 @@ async function loadFromCloud(forceCloud=false){
 async function subscribeToPremium(){
   if(!syncUser){renderSyncModal('signin');return;}
   if('getDigitalGoodsService' in window){
-    // Running inside Play Store TWA â€” use Google Play Billing
+    // Running inside Play Store TWA — use Google Play Billing
     try{
       const svc=await window.getDigitalGoodsService('https://play.google.com/billing');
       const[item]=await svc.getDetails([PLAY_PRODUCT_ID]);
@@ -757,21 +757,21 @@ async function subscribeToPremium(){
       }],{total:{label:'Premium',amount:{currency:'USD',value:'0'}}});
       const res=await req.show();
       await res.complete('success');
-      // Store purchase â€” in production a Cloud Function would verify this token
+      // Store purchase — in production a Cloud Function would verify this token
       const expiresAt=new Date(Date.now()+366*24*3600*1000);
       await _fbDb.collection('users').doc(syncUser.uid).set({
         premium:{status:'active',purchaseToken:res.details?.purchaseToken||'',grantedAt:firebase.firestore.FieldValue.serverTimestamp(),expiresAt}
       },{merge:true});
       isPremiumUser=true;
       closeSyncModal();
-      showToast('Premium activated â€” sync is on!');
+      showToast('Premium activated — sync is on!');
       syncToCloud();
       renderSettingsScreen();
     }catch(e){
       if(e.name!=='AbortError')showToast('Purchase failed. Try again.');
     }
   }else{
-    // On web â€” guide them to subscribe via Android app
+    // On web — guide them to subscribe via Android app
     renderSyncModal('web-sub');
   }
 }
@@ -788,7 +788,7 @@ document.addEventListener('touchstart', e => {
   if (e.target.closest('.drag-handle,.kit-drag-handle')) e.preventDefault();
 }, {passive: false});
 
-// Android back gesture â€” collapse expanded items first, confirm exit if nothing is open
+// Android back gesture — collapse expanded items first, confirm exit if nothing is open
 history.pushState(null, '');
 window.addEventListener('popstate', function(){
   history.pushState(null, '');
@@ -799,7 +799,7 @@ window.addEventListener('popstate', function(){
   // 3. Go to dashboard from any sub-screen
   const screen=document.querySelector('.screen.active')?.id;
   if(screen&&screen!=='screenDash'){goBack('screenDash');return;}
-  // 4. On dashboard â€” confirm before exit
+  // 4. On dashboard — confirm before exit
   appConfirm('Exit Production Checklist?',()=>{window.close();},'Exit');
 });
 
@@ -811,15 +811,15 @@ function runConfirm(){const cb=_confirmCb;closeConfirm();cb&&cb();}
 function renderSyncModal(step){
   _syncModalStep=step;
   const m=document.getElementById('syncModal');
-  const photoHtml=syncUser?.photoURL?`<img src="${escHtml(syncUser.photoURL)}" alt="">`:'ðŸ‘¤';
+  const photoHtml=syncUser?.photoURL?`<img src="${escHtml(syncUser.photoURL)}" alt="">`:'👤';
   if(step==='signin'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
-<div class="sync-modal-icon">â˜ï¸</div>
+<div class="sync-modal-icon">☁️</div>
 <div class="sync-modal-title">Sync Across Devices</div>
-<div class="sync-modal-sub">Keep your Production Checklists up to date on every device â€” automatically.</div>
+<div class="sync-modal-sub">Keep your Production Checklists up to date on every device — automatically.</div>
 <div class="sync-modal-features">
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">ðŸ’°</div><div class="sync-modal-feature-text"><strong>Why $1/year?</strong> Syncing requires servers running 24/7. This subscription covers those infrastructure costs.</div></div>
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">ðŸ“±</div><div class="sync-modal-feature-text">Synced data is tied to your account so changes appear across your phone, tablet, or desktop.</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💰</div><div class="sync-modal-feature-text"><strong>Why $1/year?</strong> Syncing requires servers running 24/7. This subscription covers those infrastructure costs.</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text">Synced data is tied to your account so changes appear across your phone, tablet, or desktop.</div></div>
 </div>
 <div style="display:flex;flex-direction:column;gap:10px;margin:16px 0 4px">
   <input id="syncEmailInput" type="email" placeholder="Email" autocomplete="email" style="padding:11px 14px;border-radius:10px;border:2px solid var(--border2);background:var(--bg);color:var(--text);font-size:15px;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border2)'">
@@ -842,13 +842,13 @@ function renderSyncModal(step){
 <div class="sync-modal-price">
   <strong>$1 / year</strong>
   Cross-device sync backed by cloud servers.<br>
-  Your local data always stays on your device â€” no lock-in.
+  Your local data always stays on your device — no lock-in.
 </div>
 <div class="sync-modal-features">
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">â˜ï¸</div><div class="sync-modal-feature-text">Gigs and checklists sync across all signed-in devices</div></div>
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">ðŸ’¾</div><div class="sync-modal-feature-text">Cloud backup â€” restore everything if you lose your phone</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">☁️</div><div class="sync-modal-feature-text">Gigs and checklists sync across all signed-in devices</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💾</div><div class="sync-modal-feature-text">Cloud backup — restore everything if you lose your phone</div></div>
 </div>
-<button class="sync-modal-cta" onclick="subscribeToPremium()">Subscribe â€” $1 / year</button>
+<button class="sync-modal-cta" onclick="subscribeToPremium()">Subscribe — $1 / year</button>
 <button class="sync-modal-skip" onclick="signOutSync()" style="color:var(--danger);font-size:13px">Sign out</button>`;
   }else if(step==='active'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
@@ -861,35 +861,35 @@ function renderSyncModal(step){
 </div>
 <div class="sync-modal-title">Sync is Active</div>
 <div class="sync-modal-sub">Your gig data syncs automatically across all signed-in devices. Changes save within seconds of any edit.</div>
-<button class="sync-modal-cta" onclick="syncToCloud().then(()=>{showToast('Synced! âœ”');closeSyncModal();})">Sync Now</button>
+<button class="sync-modal-cta" onclick="syncToCloud().then(()=>{showToast('Synced! ✔');closeSyncModal();})">Sync Now</button>
 <button class="sync-modal-skip" onclick="signOutSync()" style="color:var(--danger);font-size:13px">Sign out of sync</button>`;
   }else if(step==='web-sub'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
-<div class="sync-modal-icon">ðŸ“±</div>
+<div class="sync-modal-icon">📱</div>
 <div class="sync-modal-title">Subscribe in the Android App</div>
-<div class="sync-modal-sub">To subscribe, open Production Checklist on Android, go to Settings â†’ Sync, and tap Subscribe. Google Play handles the $1/year payment securely.<br><br>Once subscribed, sync works on all devices including the web.</div>
+<div class="sync-modal-sub">To subscribe, open Production Checklist on Android, go to Settings → Sync, and tap Subscribe. Google Play handles the $1/year payment securely.<br><br>Once subscribed, sync works on all devices including the web.</div>
 <button class="sync-modal-cta" onclick="closeSyncModal()">Got it</button>`;
   }
 }
 
-// â•â•â• DEFAULT DATA â•â•â•
+// ═══ DEFAULT DATA ═══
 const DEFAULT_CATEGORIES=[
-  {id:"cat_633",title:"Recorder â€” 633",items:["Sound Devices 633 mixer/recorder","SD cards (formatted, 2Ã—)","633 power supply + cable","NP-50 / AA batteries (spares)","Bag mount / mounting hardware"]},
-  {id:"cat_lav4",title:"Wireless â€” 4Ã— Lav",items:["Lectrosonics TX Ã— 4 (charged)","Lectrosonics RX Ã— 4","Lav mics Ã— 4 (+ 2 spares)","AA lithium batteries Ã— 16","Frequency coordination notes"]},
-  {id:"cat_lav2",title:"Wireless â€” 2Ã— Lav",items:["Lectrosonics TX Ã— 2","Lectrosonics RX Ã— 2","Lav mics Ã— 2 (+ 1 spare)","AA lithium batteries Ã— 8"]},
+  {id:"cat_633",title:"Recorder — 633",items:["Sound Devices 633 mixer/recorder","SD cards (formatted, 2×)","633 power supply + cable","NP-50 / AA batteries (spares)","Bag mount / mounting hardware"]},
+  {id:"cat_lav4",title:"Wireless — 4× Lav",items:["Lectrosonics TX × 4 (charged)","Lectrosonics RX × 4","Lav mics × 4 (+ 2 spares)","AA lithium batteries × 16","Frequency coordination notes"]},
+  {id:"cat_lav2",title:"Wireless — 2× Lav",items:["Lectrosonics TX × 2","Lectrosonics RX × 2","Lav mics × 2 (+ 1 spare)","AA lithium batteries × 8"]},
   {id:"cat_boom",title:"Boom",items:["Boom pole (primary)","Shotgun mic (primary)","Backup shotgun mic","Zeppelin + dead cat","Indoor foam windscreen","XLR cable (boom)"]},
-  {id:"cat_boomst",title:"Boom Setup",items:["Boom pole","Shotgun mic","Boom stand Ã— 2","Boom stand XLR cable","Zeppelin + dead cat","Indoor foam windscreen"]},
+  {id:"cat_boomst",title:"Boom Setup",items:["Boom pole","Shotgun mic","Boom stand × 2","Boom stand XLR cable","Zeppelin + dead cat","Indoor foam windscreen"]},
   {id:"cat_sling",title:"Sling Bag",items:["Sling bag packed + organized","Headphones","Gaff tape, moleskin, transpore","Lav covers / overcovers","Multi-tool + scissors","Adapters kit"]},
   {id:"cat_acc",title:"Accessories",items:["Headphones","Gaff tape, moleskin","Lav covers","Adapters kit"]},
-  {id:"cat_scorpio",title:"Scorpio Backpack",items:["Sound Devices Scorpio in backpack","Scorpio power supply","SD cards (formatted, 4Ã—)","Headphone amp (if separate)","Backpack packed + checked"]},
+  {id:"cat_scorpio",title:"Scorpio Backpack",items:["Sound Devices Scorpio in backpack","Scorpio power supply","SD cards (formatted, 4×)","Headphone amp (if separate)","Backpack packed + checked"]},
   {id:"cat_cartpel",title:"Cart Pelican",items:["Cart Pelican case locked","All cart accessories inside","Wheeled cart / K-tek cart","Bungee cords / velcro straps"]},
-  {id:"cat_antrack",title:"Battery + Antenna Rack",items:["Antenna distribution unit (powered)","RX units mounted to rack","Battery distribution / V-mount","RF cables (BNC) Ã— 4+","Remote antennas (shark fins)","Rack case secured"]},
+  {id:"cat_antrack",title:"Battery + Antenna Rack",items:["Antenna distribution unit (powered)","RX units mounted to rack","Battery distribution / V-mount","RF cables (BNC) × 4+","Remote antennas (shark fins)","Rack case secured"]},
   {id:"cat_minipc",title:"Mini PC Backpack",items:["Mini PC / laptop","Timecode master (Tentacle/Betso)","USB hub + peripherals","Backup drives","Power brick for PC"]},
-  {id:"cat_power",title:"Power Crate",items:["Power crate packed","Extension cables Ã— 2","Power strip / conditioner","IEC cables","Ground lift adapters"]},
-  {id:"cat_xlr",title:"XLR Crate",items:["XLR cables Ã— 6 (assorted lengths)","TRS / TS cables","BNC cables Ã— 4","Male/female XLR adapters","Snake / breakout"]},
-  {id:"cat_slingu",title:'Sling Bag â€” Universal',items:['Gaff tape (1" + 2")','Spike tape','Sharpies + pen','Mini flashlight','Multi-tool','AA + 9V batteries (extras)','Zip ties','Velcro straps']},
-  {id:"cat_tc",title:"Timecode Case",items:["Tentacle Sync units Ã— 4 (charged)","Tentacle cables (LEMO 5-pin Ã— 4)","Tentacle cables (3.5mm TRS Ã— 2)","Timecode case packed","Spare USB-C cables"]},
-  {id:"cat_633int",title:"Recorder â€” 633 (Interview)",items:["Sound Devices 633","SD cards (formatted, 2Ã—)","633 power supply","Battery bag (AA lithium + NP-50)"]},
+  {id:"cat_power",title:"Power Crate",items:["Power crate packed","Extension cables × 2","Power strip / conditioner","IEC cables","Ground lift adapters"]},
+  {id:"cat_xlr",title:"XLR Crate",items:["XLR cables × 6 (assorted lengths)","TRS / TS cables","BNC cables × 4","Male/female XLR adapters","Snake / breakout"]},
+  {id:"cat_slingu",title:'Sling Bag — Universal',items:['Gaff tape (1" + 2")','Spike tape','Sharpies + pen','Mini flashlight','Multi-tool','AA + 9V batteries (extras)','Zip ties','Velcro straps']},
+  {id:"cat_tc",title:"Timecode Case",items:["Tentacle Sync units × 4 (charged)","Tentacle cables (LEMO 5-pin × 4)","Tentacle cables (3.5mm TRS × 2)","Timecode case packed","Spare USB-C cables"]},
+  {id:"cat_633int",title:"Recorder — 633 (Interview)",items:["Sound Devices 633","SD cards (formatted, 2×)","633 power supply","Battery bag (AA lithium + NP-50)"]},
 ];
 const DEFAULT_TEMPLATES=[
   {id:"uber_doc",name:"Uber Doc",categoryIds:["cat_633","cat_lav4","cat_boom","cat_sling"]},
@@ -900,21 +900,21 @@ const DEFAULT_TEMPLATES=[
 const SETUP_PHASE={categories:[
   {title:"Location Arrival",items:["Check in with producer / AD","Walk the set / location","Identify power sources","Note HVAC / noise issues"]},
   {title:"RF & Wireless",items:["Run spectrum scan","Coordinate / clear frequencies","Program TX/RX to clear freqs","Range-test wireless in location"]},
-  {title:"Recorder Setup",items:["Set sample rate + bit depth â€” 48kHz / 24-bit","Confirm file naming convention","Set TC frame rate to match camera","Verify SD card has space","Arm all tracks"]},
+  {title:"Recorder Setup",items:["Set sample rate + bit depth — 48kHz / 24-bit","Confirm file naming convention","Set TC frame rate to match camera","Verify SD card has space","Arm all tracks"]},
   {title:"Timecode Sync",items:["Jam Tentacles to camera(s)","Confirm TC readout on all cameras","Remind DP to keep Tentacle plugged in"]},
   {title:"Talent Mics",items:["Wire talent with lavs","Gain-stage lav levels","Check for clothing rustle","Confirm mutes OFF before rolling"]},
   {title:"Camera Feed",items:["Send scratch audio to camera","Camera operator confirms levels","ISO tracks confirmed on recorder"]},
-  {title:"Pre-Roll Check",items:["Roll rec â€” confirm all tracks hitting","Playback spot-check","Headphone mix set","Alert team: ready to roll"]},
+  {title:"Pre-Roll Check",items:["Roll rec — confirm all tracks hitting","Playback spot-check","Headphone mix set","Alert team: ready to roll"]},
 ]};
 const TEARDOWN_PHASE={categories:[
   {title:"Wrap Mics & Wireless",items:["Remove all lavs from talent","Power down TX units","Remove batteries from TX/RX","Coil lav cables properly","Bag all RF gear"]},
-  {title:"Recorder & Media",items:["Stop recording â€” confirm last file saved","Label / eject SD card safely","Back up to hard drive on-site if required","Confirm delivery method with producer","Power down recorder"]},
+  {title:"Recorder & Media",items:["Stop recording — confirm last file saved","Label / eject SD card safely","Back up to hard drive on-site if required","Confirm delivery method with producer","Power down recorder"]},
   {title:"Cables & Accessories",items:["Coil all XLR / BNC cables","Remove all gaff tape from set","Collect all adapters / dongles","Retrieve Tentacle Syncs from cameras"]},
-  {title:"Pack Out",items:["Walk set â€” nothing left behind","Check bathroom / green room","Confirm all cases / bags accounted for","Headphones packed","Boom pole + zeppelin packed"]},
+  {title:"Pack Out",items:["Walk set — nothing left behind","Check bathroom / green room","Confirm all cases / bags accounted for","Headphones packed","Boom pole + zeppelin packed"]},
   {title:"Admin",items:["Thank producer / client","Note any gear issues / repairs needed","Log hours for invoice","Send invoice within 24 hours"]},
 ]};
 
-// â•â•â• STATE â•â•â•
+// ═══ STATE ═══
 let appState={gigs:[],templates:null,categories:null};
 let activeGigId=null,activePhaseIdx=0,editingItem=null;
 let selectedKitIds=new Set(),extraTasks=[];
@@ -928,7 +928,7 @@ function loadState(){
   try{const s=localStorage.getItem('tyo_v5');if(s)appState=JSON.parse(s);}catch(e){}
   if(!appState.categories)appState.categories=JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
   if(!appState.templates)appState.templates=JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
-  // Migrate: rename Teardown â†’ Wrap on existing gigs
+  // Migrate: rename Teardown → Wrap on existing gigs
   (appState.gigs||[]).forEach(g=>(g.phases||[]).forEach(p=>{if(p.label==='Teardown')p.label='Wrap';}));
   saveState();
   if(!appState.gigs)appState.gigs=[];
@@ -958,7 +958,7 @@ function svgPlus(sz=11){return`<svg width="${sz}" height="${sz}" viewBox="0 0 12
 function getCat(id){return appState.categories.find(c=>c.id===id);}
 function getTpl(id){return appState.templates.find(t=>t.id===id);}
 
-// â•â•â• NAVIGATION â•â•â•
+// ═══ NAVIGATION ═══
 function isWide(){return window.innerWidth>=1100;}
 function setActiveTab(name){
   document.querySelectorAll('.gtbi').forEach(t=>t.classList.remove('active'));
@@ -972,7 +972,7 @@ function goBack(target){if(editingItem)commitEditItem();showScreen(target);if(ta
 function goNewGig(){selectedKitIds.clear();extraTasks=[];document.getElementById('newGigName').value='';document.getElementById('newGigDate').value=new Date().toISOString().slice(0,10);renderKitGrid();renderExtraTasks();updateBuildBar();showScreen('screenNewGig');setActiveTab('gigs');setTimeout(()=>document.getElementById('newGigName').focus(),100);}
 function goLibrary(tab){libraryTab=tab||'templates';openLibId=null;renderLibraryScreen();showScreen('screenLibrary');setActiveTab('library');}
 
-// â•â•â• DASHBOARD â•â•â•
+// ═══ DASHBOARD ═══
 function renderDashboard(){
   const el=document.getElementById('dashMain');
   if(!appState.gigs.length){
@@ -991,7 +991,7 @@ function renderDashboard(){
     const upNextDots=`<div class="gig-phase-dots">${['P','S','W'].map((l,i)=>{const ph=upNext.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p,t)}">${l}</div>`;}).join('')}</div>`;
     html+=`<div class="section-label orange">Up Next</div>
 <div class="up-next-card" onclick="openGig('${upNext.id}')">
-  <div class="up-next-header"><div style="display:flex;align-items:center;gap:8px;min-width:0">${upNextDots}<div class="up-next-name">${escHtml(upNext.name)}</div></div><span style="display:flex;align-items:center;gap:10px;flex-shrink:0"><button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${upNext.id}')" style="position:static;opacity:.6">${svgX(11)}</button><span style="color:var(--text-muted);font-size:18px">â€º</span></span></div>
+  <div class="up-next-header"><div style="display:flex;align-items:center;gap:8px;min-width:0">${upNextDots}<div class="up-next-name">${escHtml(upNext.name)}</div></div><span style="display:flex;align-items:center;gap:10px;flex-shrink:0"><button class="gig-card-del" onclick="event.stopPropagation();deleteGig('${upNext.id}')" style="position:static;opacity:.6">${svgX(11)}</button><span style="color:var(--text-muted);font-size:18px">›</span></span></div>
   ${sub?`<div class="up-next-call">${sub}</div>`:'<div style="margin-bottom:12px"></div>'}
   <div class="up-next-progress-row"><span>${kd} of ${kt} kits packed</span><span class="up-next-pct">${pct}%</span></div>
   <div class="up-next-bar"><div class="up-next-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':pct>0?'var(--orange)':'var(--surface3)'}"></div></div>
@@ -1003,7 +1003,7 @@ function renderDashboard(){
       const{done,total}=gigProgress(g);const pct=total?Math.round(done/total*100):0;const allDone=pct===100;
       const ds=g.date?new Date(g.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
       const tn=(g.kitIds||[]).map(id=>getTpl(id)?.name).filter(Boolean).join(' + ');
-      const meta=[ds,tn].filter(Boolean).join(' Â· ');
+      const meta=[ds,tn].filter(Boolean).join(' · ');
       const labels=['P','S','W'];
       const phaseDots=`<div class="gig-phase-dots">${labels.map((l,i)=>{const ph=g.phases?.[i];const{done:d,total:t}=ph?phaseProgress(ph):{done:0,total:0};const p=t?Math.round(d/t*100):0;return`<div class="gig-phase-dot" style="${phaseDotStyle(p,t)}">${l}</div>`;}).join('')}</div>`;
       html+=`<div class="gig-card" onclick="openGig('${g.id}')">
@@ -1035,7 +1035,7 @@ function dayLabel(ds){
 }
 function formatTime(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return`${h%12||12}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`;}
 
-// â•â•â• NEW GIG â•â•â•
+// ═══ NEW GIG ═══
 function orderedTemplates(){
   if(!appState.templateOrder)appState.templateOrder=appState.templates.map(t=>t.id);
   return appState.templateOrder.map(id=>appState.templates.find(t=>t.id===id)).filter(Boolean);
@@ -1071,7 +1071,7 @@ function _onTplMove(e){
   _tplDrag.lastX=e.clientX;_tplDrag.lastY=e.clientY;
   if(!_tplDrag.active){
     if(Math.hypot(e.clientX-_tplDrag.startX,e.clientY-_tplDrag.startY)<8)return;
-    // Threshold crossed â€” commit to drag
+    // Threshold crossed — commit to drag
     _tplDrag.active=true;
     const ghost=_tplDrag.card.cloneNode(true);ghost.removeAttribute('id');
     const r=_tplDrag.card.getBoundingClientRect();
@@ -1089,7 +1089,7 @@ function _onTplMove(e){
   document.querySelectorAll('.kit-card').forEach(c=>c.classList.remove('drag-over'));
   _nearestCard(cx,cy,_tplDrag.id)?.classList.add('drag-over');
 }
-// List drag (vertical rows in library â€” kit items, setup/teardown steps)
+// List drag (vertical rows in library — kit items, setup/teardown steps)
 let _listDrag=null;
 function startListItemDrag(e,catId,routineKey,idx){
   e.preventDefault();e.stopPropagation();
@@ -1246,8 +1246,8 @@ function renderKitGrid(){
 <div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')">
   <div class="kit-card-check">${svgCheck(9)}</div>
   <div class="kit-card-name">${escHtml(t.name)}</div>
-  <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?`${colorDot(kitColorHex(c.color),8)}${escHtml(c.title)}`:''}).filter(Boolean).join(' Â· ')}</div>
-  <span class="kit-drag-handle" onpointerdown="event.stopPropagation();startTplDrag(event,'${t.id}')" onclick="event.stopPropagation()">â‹®â‹®</span>
+  <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?`${colorDot(kitColorHex(c.color),8)}${escHtml(c.title)}`:''}).filter(Boolean).join(' · ')}</div>
+  <span class="kit-drag-handle" onpointerdown="event.stopPropagation();startTplDrag(event,'${t.id}')" onclick="event.stopPropagation()">⋮⋮</span>
 </div>`).join('');
 }
 function toggleKit(id){selectedKitIds.has(id)?selectedKitIds.delete(id):selectedKitIds.add(id);document.getElementById('kitcard_'+id)?.classList.toggle('selected',selectedKitIds.has(id));updateBuildBar();}
@@ -1255,9 +1255,9 @@ function updateBuildBar(){
   const n=selectedKitIds.size;document.getElementById('buildBtn').disabled=n===0;
   if(!n){document.getElementById('buildSummary').textContent='No packs selected';return;}
   const kits=[...selectedKitIds].reduce((a,id)=>a+(getTpl(id)?.categoryIds?.length||0),0);
-  document.getElementById('buildSummary').textContent=`${n} pack${n>1?'s':''} Â· ${kits} kits`;
+  document.getElementById('buildSummary').textContent=`${n} pack${n>1?'s':''} · ${kits} kits`;
 }
-function renderExtraTasks(){document.getElementById('extraTasksList').innerHTML=extraTasks.map(t=>`<div class="extra-task-row ${t.shared?'shared-on':''}" id="extrow_${t.id}"><input class="extra-task-text" placeholder="Task descriptionâ€¦" value="${escHtml(t.text)}" oninput="updateExtraTask('${t.id}',this.value)"><span class="kit-shared-label ${t.shared?'on':'off'}" style="font-size:8px;white-space:nowrap">IMPORTANT</span><button class="shared-toggle ${t.shared?'on':''}" onclick="toggleExtraTaskShared('${t.id}')"><span class="st-dot"></span></button><button class="extra-task-remove" onclick="removeExtraTask('${t.id}')">${svgX()}</button></div>`).join('');}
+function renderExtraTasks(){document.getElementById('extraTasksList').innerHTML=extraTasks.map(t=>`<div class="extra-task-row ${t.shared?'shared-on':''}" id="extrow_${t.id}"><input class="extra-task-text" placeholder="Task description…" value="${escHtml(t.text)}" oninput="updateExtraTask('${t.id}',this.value)"><span class="kit-shared-label ${t.shared?'on':'off'}" style="font-size:8px;white-space:nowrap">IMPORTANT</span><button class="shared-toggle ${t.shared?'on':''}" onclick="toggleExtraTaskShared('${t.id}')"><span class="st-dot"></span></button><button class="extra-task-remove" onclick="removeExtraTask('${t.id}')">${svgX()}</button></div>`).join('');}
 function addExtraTask(){const t={id:uid(),text:'',shared:false};extraTasks.push(t);renderExtraTasks();document.querySelector(`#extrow_${t.id} input`)?.focus();}
 function updateExtraTask(id,val){const t=extraTasks.find(x=>x.id===id);if(t)t.text=val;}
 function removeExtraTask(id){extraTasks=extraTasks.filter(t=>t.id!==id);renderExtraTasks();}
@@ -1301,7 +1301,7 @@ function buildGig(){
   activeGigId=gig.id;activePhaseIdx=0;renderChecklistScreen();showScreen('screenChecklist');
 }
 
-// â•â•â• LIBRARY â•â•â•
+// ═══ LIBRARY ═══
 let _importPanelOpen=false;
 function renderLibRail(){
   const isTpl=libraryTab==='templates';
@@ -1402,15 +1402,15 @@ function renderLibTpl(tpl){
   const open=openLibId===tpl.id;
   return`<div class="lib-item ${open?'open':''}" id="libitem_${tpl.id}">
   <div class="lib-item-hdr" onclick="toggleLibItem('${tpl.id}')" onpointerdown="startLPTpl(event,'${tpl.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
-    <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${tpl.id}','tpl')">â‹®â‹®</span>
+    <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${tpl.id}','tpl')">⋮⋮</span>
     <span class="lib-item-name" id="libname_${tpl.id}">${escHtml(tpl.name)}</span>
-    <span class="lib-item-right">${open?'long-press to rename':'â€º'}</span>
+    <span class="lib-item-right">${open?'long-press to rename':'›'}</span>
   </div>
   ${open?`<div class="lib-item-body">
     <div class="tpl-kit-rows" id="tplrows_${tpl.id}">${renderTplRows(tpl)}</div>
     <div class="tpl-add-row">
       <div class="kit-lib-dropdown">
-        <button class="kit-lib-dd-btn" onclick="toggleKitDropdown('${tpl.id}')">+ Add kit from library â–¾</button>
+        <button class="kit-lib-dd-btn" onclick="toggleKitDropdown('${tpl.id}')">+ Add kit from library ▾</button>
         <div class="kit-lib-dd-panel" id="kitddpanel_${tpl.id}">
           ${(()=>{const avail=appState.categories.filter(c=>!(tpl.categoryIds||[]).includes(c.id));return avail.length?avail.map(c=>`<div class="kit-lib-dd-item" onclick="addCatToTplDirect('${tpl.id}','${c.id}')">${colorDot(kitColorHex(c.color),10)}<span class="kit-lib-dd-name">${escHtml(c.title)}</span><span class="kit-lib-dd-count">${c.items.length} items</span></div>`).join(''):'<div class="kit-lib-dd-empty">All kits already added</div>';})()}
         </div>
@@ -1424,7 +1424,7 @@ function renderLibTpl(tpl){
 </div>`;
 }
 function renderTplRows(tpl){
-  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);const hex=cat?kitColorHex(cat.color):null;return`<div class="tpl-kit-row" id="tplrow_${tpl.id}_${cid}" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPRenameTplKit(event,'${tpl.id}','${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">â‹®â‹®</span>${colorDot(hex,9)}<span class="tpl-kit-name" id="tplkitname_${tpl.id}_${cid}">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
+  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);const hex=cat?kitColorHex(cat.color):null;return`<div class="tpl-kit-row" id="tplrow_${tpl.id}_${cid}" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPRenameTplKit(event,'${tpl.id}','${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span>${colorDot(hex,9)}<span class="tpl-kit-name" id="tplkitname_${tpl.id}_${cid}">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
 }
 
 function renderLibKit(cat){
@@ -1433,10 +1433,10 @@ function renderLibKit(cat){
   const totalItems=`${cat.items.length} items`;
   return`<div class="lib-item ${open?'open':''}" id="libitem_${cat.id}">
   <div class="lib-item-hdr" onclick="toggleLibItem('${cat.id}')" onpointerdown="startLPKit(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
-    <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${cat.id}','kit')">â‹®â‹®</span>
+    <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${cat.id}','kit')">⋮⋮</span>
     ${cat.color?colorDot(kitColorHex(cat.color),10):''}
     <span class="lib-item-name" style="flex:1">${escHtml(cat.title)}</span>
-    <span class="lib-item-right">${open?'long-press to rename':totalItems+'  â€º'}</span>
+    <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
   ${open?`<div class="lib-item-body">
     ${renderColorPicker(cat.id,cat.color||null)}
@@ -1450,9 +1450,9 @@ function renderLibKit(cat){
         <div class="lib-routine-col-label">PACKING <span style="color:var(--text-muted);font-weight:400">${cat.items.length}</span></div>
         <div class="kit-items-list" id="kitlist_${cat.id}">
           ${cat.items.map((item,ii)=>`<div class="kit-item-row ${item.shared?'shared-on':''}">
-            <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">â‹®â‹®</span>
+            <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
             ${item.shared?`<span class="kit-item-bang">!</span>`:''}
-            <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Itemâ€¦">
+            <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
             <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
             <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
           </div>`).join('')}
@@ -1462,14 +1462,14 @@ function renderLibKit(cat){
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">SETUP <span style="color:var(--text-muted);font-weight:400">${(cat.setup||[]).length}</span></div>
         <div id="kitlist_setup_${cat.id}">
-          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">â‹®â‹®</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup stepâ€¦"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+          ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>
       </div>
       <div class="lib-routine-col">
         <div class="lib-routine-col-label">WRAP <span style="color:var(--text-muted);font-weight:400">${(cat.teardown||[]).length}</span></div>
         <div id="kitlist_teardown_${cat.id}">
-          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">â‹®â‹®</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown stepâ€¦"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+          ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
         </div>
         <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>
       </div>
@@ -1478,9 +1478,9 @@ function renderLibKit(cat){
     <div class="kit-items-list" id="kitlist_${cat.id}">
       ${cat.items.map((item,ii)=>`
       <div class="kit-item-row ${item.shared?'shared-on':''}">
-        <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">â‹®â‹®</span>
+        <span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}',null,${ii})">⋮⋮</span>
         ${item.shared?`<span class="kit-item-bang">!</span>`:''}
-        <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Itemâ€¦">
+        <input class="kit-item-input" value="${escHtml(item.text)}" onchange="updateCatItem('${cat.id}',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateCatItem('${cat.id}',${ii},this.value);addCatItem('${cat.id}');}" placeholder="Item…">
         <span class="kit-shared-label ${item.shared?'on':'off'}" style="${item.shared?'':'visibility:hidden'}">IMPORTANT</span>
         <button class="shared-toggle ${item.shared?'on':''}" onclick="event.stopPropagation();toggleCatShared('${cat.id}',${ii})"><span class="st-dot"></span></button>
         <button class="row-remove" onclick="event.stopPropagation();deleteCatItem('${cat.id}',${ii})">${svgX(10)}</button>
@@ -1490,13 +1490,13 @@ function renderLibKit(cat){
     <button class="add-item-link" onclick="addCatItem('${cat.id}')">${svgPlus(10)} Add item</button>`
     :rtab==='setup'?`
     <div id="kitlist_${cat.id}">
-      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">â‹®â‹®</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup stepâ€¦"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.setup||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','setup',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','setup',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','setup',${ii},this.value);addRoutineStep('${cat.id}','setup');}" placeholder="Setup step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','setup',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps that run at location when this kit is deployed. Appears in the gig's Setup tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','setup')">${svgPlus(10)} Add setup step</button>`
     :`
     <div id="kitlist_${cat.id}">
-      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">â‹®â‹®</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown stepâ€¦"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
+      ${(cat.teardown||[]).map((s,ii)=>`<div class="step-row"><span class="drag-handle" onpointerdown="startListItemDrag(event,'${cat.id}','teardown',${ii})">⋮⋮</span><input class="step-input" value="${escHtml(typeof s==='string'?s:s.text)}" onchange="updateRoutineStep('${cat.id}','teardown',${ii},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();updateRoutineStep('${cat.id}','teardown',${ii},this.value);addRoutineStep('${cat.id}','teardown');}" placeholder="Teardown step…"><button class="row-remove" onclick="event.stopPropagation();deleteRoutineStep('${cat.id}','teardown',${ii})">${svgX(10)}</button></div>`).join('')}
     </div>
     <div class="lib-hint">Steps for striking this kit. Appears in the gig's Wrap tab.</div>
     <button class="add-item-link" onclick="addRoutineStep('${cat.id}','teardown')">${svgPlus(10)} Add teardown step</button>`}
@@ -1600,7 +1600,7 @@ function beginRenameTplKit(tplId,catId){
   nameEl.replaceWith(inp);inp.focus();inp.select();
 }
 
-// Library item drag-to-reorder (triggered from â‹®â‹® handle only)
+// Library item drag-to-reorder (triggered from ⋮⋮ handle only)
 let _libDrag=null;
 function startLibDrag(e,id,type){
   e.preventDefault();
@@ -1693,7 +1693,7 @@ function beginRenameLibKit(catId){
   },40);
 }
 
-// â•â•â• CHECKLIST â•â•â•
+// ═══ CHECKLIST ═══
 function getActiveGig(){return appState.gigs.find(g=>g.id===activeGigId);}
 function renderChecklistScreen(){
   const gig=getActiveGig();if(!gig)return;
@@ -1716,7 +1716,7 @@ function renderGigRail(){
     const railDots=['P','S','W'].map((l,i)=>{const ph=g.phases?.[i];const{done:rd,total:rt}=ph?phaseProgress(ph):{done:0,total:0};const rp=rt?Math.round(rd/rt*100):0;return`<div class="gig-phase-dot" style="width:14px;height:14px;font-size:7px;${phaseDotStyle(rp,rt)}">${l}</div>`;}).join('');
     html+=`<div class="gig-rail-item${active?' active':''}" onclick="openGig('${g.id}')">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div class="gig-phase-dots">${railDots}</div><div class="gig-rail-name" style="margin-bottom:0">${escHtml(g.name)}</div></div>
-      <div class="gig-rail-meta">${ds}${ds&&total?' Â· ':''}${total?done+' / '+total+' items':''}</div>
+      <div class="gig-rail-meta">${ds}${ds&&total?' · ':''}${total?done+' / '+total+' items':''}</div>
       ${total?`<div class="gig-rail-bar"><div class="gig-rail-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>`:''}
     </div>`;
   });
@@ -1749,7 +1749,7 @@ function renderCategory(cat,phaseIdx){
     <span class="category-title" ondblclick="event.stopPropagation();startEditCat('${cat.id}')" onpointerdown="event.stopPropagation();lpCatStart(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()" id="cattitle_${cat.id}">${escHtml(cat.title)}</span>
     ${hasShared?`<div class="kit-shared-badge">!</div>`:''}
     <span class="category-count">${done}/${cat.items.length}</span>
-    <span class="kit-chevron">${isExp?'â€¹':'â€º'}</span>
+    <span class="kit-chevron">${isExp?'‹':'›'}</span>
     <button class="kit-del-btn" onclick="event.stopPropagation();deleteCategory('${cat.id}')">${svgX(9)}</button>
   </div>
   <div class="category-body ${isExp?'open':''}" id="catbody_${cat.id}">
@@ -1784,13 +1784,13 @@ function updateClProgress(){
     const pct=total?Math.round(done/total*100):0;
     return{ph,pi,done,total,pct};
   });
-  // Master progress bar â€” all phases combined
+  // Master progress bar — all phases combined
   const totalDone=phases.reduce((s,p)=>s+p.done,0);
   const totalAll=phases.reduce((s,p)=>s+p.total,0);
   const totalPct=totalAll?Math.round(totalDone/totalAll*100):0;
   const kd=gig.phases[0]?.categories.filter(c=>c.items.length&&c.items.every(i=>i.checked)).length||0;
   const kt=gig.phases[0]?.categories.length||0;
-  document.getElementById('clProgressLabel').innerHTML=`<b>${kd} / ${kt} kits packed</b> Â· ${totalDone} / ${totalAll} total items`;
+  document.getElementById('clProgressLabel').innerHTML=`<b>${kd} / ${kt} kits packed</b> · ${totalDone} / ${totalAll} total items`;
   document.getElementById('clProgressPct').textContent=totalPct+'%';
   const fill=document.getElementById('progressFill');
   if(fill){
@@ -1802,7 +1802,7 @@ function updateClProgress(){
   // Mobile P/S/W dots in header
   const mobileDots=document.getElementById('clPhaseDots');
   if(mobileDots)mobileDots.innerHTML=labels.map((l,i)=>{const p=phases[i]?.pct||0;const t=phases[i]?.total??-1;return`<div class="gig-phase-dot" style="${phaseDotStyle(p,t)}">${l}</div>`;}).join('');
-  // Desktop column bars + stats + rail dots â€” all phases every time
+  // Desktop column bars + stats + rail dots — all phases every time
   phases.forEach(({pi,done,total,pct})=>{
     const bar=document.getElementById('dtbar_'+pi);
     if(bar){bar.style.width=pct+'%';bar.style.background=pct===100?'var(--green)':pct>0?'var(--orange)':'transparent';}
@@ -1825,7 +1825,7 @@ function updateClProgress(){
     if(railMeta){
       const gig=getActiveGig();
       const ds=gig?.date?new Date(gig.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
-      railMeta.textContent=(ds?ds+' Â· ':'')+totalDone+' / '+totalAll+' items';
+      railMeta.textContent=(ds?ds+' · ':'')+totalDone+' / '+totalAll+' items';
     }
   }
 }
@@ -1858,7 +1858,7 @@ function renderPhaseContent(){
   if(activePhaseIdx===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up. Confirm each kit before you leave.</div>`;
   phase.categories.forEach(cat=>{html+=renderCategory(cat,activePhaseIdx);});
   html+=`<button class="add-cat-btn" onclick="addCategory()">${svgPlus(10)} Add Kit</button>`;
-  if(activePhaseIdx===0)html+=`<div class="cl-hint">Tap row to expand Â· tap â—‹ to pack whole kit Â· long-press item to edit</div>`;
+  if(activePhaseIdx===0)html+=`<div class="cl-hint">Tap row to expand · tap ○ to pack whole kit · long-press item to edit</div>`;
   clMain.innerHTML=html;
 }
 function phaseProgress(phase){let done=0,total=0;phase.categories.forEach(c=>c.items.forEach(i=>{total++;if(i.checked)done++;}));return{done,total};}
@@ -1867,7 +1867,7 @@ function findCat(catId){const gig=getActiveGig();for(const p of gig.phases){cons
 function replaceCategory(cat){const el=document.getElementById('cat_'+cat.id);if(el){const tmp=document.createElement('div');tmp.innerHTML=renderCategory(cat,activePhaseIdx);el.replaceWith(tmp.firstElementChild);}}
 
 function toggleKitCheck(catId){const cat=findCat(catId);if(!cat)return;const all=cat.items.every(i=>i.checked);cat.items.forEach(i=>i.checked=!all);saveState();replaceCategory(cat);updateClProgress();}
-function toggleCatExpand(catId){const cat=findCat(catId);if(!cat)return;cat.expanded=cat.expanded===false;saveState();document.getElementById('catbody_'+catId)?.classList.toggle('open',cat.expanded!==false);const chev=document.querySelector(`#cat_${catId} .kit-chevron`);if(chev)chev.textContent=cat.expanded!==false?'â€¹':'â€º';}
+function toggleCatExpand(catId){const cat=findCat(catId);if(!cat)return;cat.expanded=cat.expanded===false;saveState();document.getElementById('catbody_'+catId)?.classList.toggle('open',cat.expanded!==false);const chev=document.querySelector(`#cat_${catId} .kit-chevron`);if(chev)chev.textContent=cat.expanded!==false?'‹':'›';}
 function toggleItem(id){if(_lpSuppressClick){_lpSuppressClick=false;return;}const f=findItem(id);if(!f)return;f.item.checked=!f.item.checked;saveState();replaceCategory(f.cat);updateClProgress();}
 function toggleShared(itemId){const f=findItem(itemId);if(!f)return;f.item.shared=!f.item.shared;saveState();replaceCategory(f.cat);}
 
@@ -1888,7 +1888,7 @@ function commitGigName(){const gig=getActiveGig();const inp=document.getElementB
 document.getElementById('clGigNameInput').addEventListener('blur',commitGigName);
 document.getElementById('clGigNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')commitGigName();});
 
-// â•â•â• SETTINGS â•â•â•
+// ═══ SETTINGS ═══
 function goSettings(){renderSettingsScreen();showScreen('screenSettings');setActiveTab('settings');}
 function getSettings(){return appState.settings||(appState.settings={remindersEnabled:true,twoDaysBeforeAlert:true,nightBeforeAlert:true,textSize:'normal'});}
 function applyTextSize(){const s=getSettings();document.body.classList.remove('text-large','text-xlarge');if(s.textSize==='large')document.body.classList.add('text-large');else if(s.textSize==='xlarge')document.body.classList.add('text-xlarge');}
@@ -1900,8 +1900,8 @@ function renderSettingsScreen(){
   const s=getSettings();
   const notifSupported='Notification' in window;
   const notifStatus=notifSupported?Notification.permission:'unavailable';
-  const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">âš  Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
-  const syncBtnLabel=syncUser&&isPremiumUser?'âœ“ Active':syncUser?'Upgrade':'Set up';
+  const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
+  const syncBtnLabel=syncUser&&isPremiumUser?'✓ Active':syncUser?'Upgrade':'Set up';
   const syncBtnColor=syncUser&&isPremiumUser?'var(--green)':'var(--blue)';
   const syncSubText=syncUser&&isPremiumUser?'Syncing automatically':syncUser?'Subscribe to activate sync':'$1/year subscription to sync across multiple devices';
   const syncModalTarget=syncUser&&isPremiumUser?'active':syncUser?'premium':'signin';
@@ -1921,7 +1921,7 @@ function renderSettingsScreen(){
       <button onclick="showSyncModal('${syncModalTarget}')" style="background:${syncBtnColor};color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;">${syncBtnLabel}</button>
     </div>
   </div>
-  ${!_fbConfigured?'<p class="settings-note" style="color:var(--orange)">âš™ Developer: Firebase not configured â€” add your project config to FIREBASE_CONFIG in index.html.</p>':''}
+  ${!_fbConfigured?'<p class="settings-note" style="color:var(--orange)">⚙ Developer: Firebase not configured — add your project config to FIREBASE_CONFIG in index.html.</p>':''}
 </div>
 <div class="settings-section">
   <div class="settings-section-label">Appearance</div>
@@ -1945,7 +1945,7 @@ function renderSettingsScreen(){
       </div>
       <div style="background:var(--bg);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);">
         <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;"></div>
-        <span class="item-text" style="flex:1;">Lectrosonics RX Ã— 2</span>
+        <span class="item-text" style="flex:1;">Lectrosonics RX × 2</span>
         <span class="shared-bang" style="flex-shrink:0;">!</span>
       </div>
     </div>
@@ -1957,7 +1957,7 @@ function renderSettingsScreen(){
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-row-title">All Reminders</div>
-        <div class="settings-row-sub">Master switch â€” turns off all gig alerts</div>
+        <div class="settings-row-sub">Master switch — turns off all gig alerts</div>
       </div>
       <button class="settings-toggle ${s.remindersEnabled?'on':''}" id="stogAll" onclick="toggleSetting('remindersEnabled')"><span class="st-dot"></span></button>
     </div>
@@ -1984,7 +1984,7 @@ function renderSettingsScreen(){
   <div class="settings-card">
     <div class="settings-row">
       <div class="settings-row-left">
-        <div class="settings-row-sub" style="color:var(--text-muted);line-height:1.6;">Mark any kit item or one-off task as <strong>Important</strong> to flag it for a double-check when packing. This is especially useful for gear shared between multiple kits â€” it reminds you to confirm the item actually made it into the right kit before you head out.</div>
+        <div class="settings-row-sub" style="color:var(--text-muted);line-height:1.6;">Mark any kit item or one-off task as <strong>Important</strong> to flag it for a double-check when packing. This is especially useful for gear shared between multiple kits — it reminds you to confirm the item actually made it into the right kit before you head out.</div>
       </div>
     </div>
   </div>
@@ -2016,14 +2016,14 @@ function renderSettingsScreen(){
     </div>
     <div class="settings-row" style="flex-direction:column;align-items:stretch;padding-top:12px;padding-bottom:12px;">
       <span class="import-toggle" onclick="_importPanelOpen=!_importPanelOpen;renderSettingsScreen()" style="font-size:13px;margin-bottom:${_importPanelOpen?'12':'0'}px;">
-        ${_importPanelOpen?'â–¾ Hide CSV guide':'â–¸ How to format your CSV'}
+        ${_importPanelOpen?'▾ Hide CSV guide':'▸ How to format your CSV'}
       </span>
       ${_importPanelOpen?`<div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
         <div style="margin-bottom:10px;">Build a spreadsheet with these columns and save as <code style="background:var(--surface2);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px;">.csv</code>:</div>
         <table class="import-col-table">
           <tr><td>Kit Name</td><td>Identical names will be combined into one kit.</td></tr>
           <tr><td>Packing</td><td>The kit item that will appear on the packing list</td></tr>
-          <tr><td>Important</td><td>Any value â€” flags the packing item as IMPORTANT</td></tr>
+          <tr><td>Important</td><td>Any value — flags the packing item as IMPORTANT</td></tr>
           <tr><td>Setup</td><td>The step that will appear on the setup list</td></tr>
           <tr><td>Wrap</td><td>The step that will appear on the wrap list</td></tr>
         </table>
@@ -2038,7 +2038,7 @@ function renderSettingsScreen(){
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Setup</th>
             <th style="padding:4px 7px;text-align:left;color:var(--text-muted);border:1px solid var(--border2);">Wrap</th>
           </tr>
-          <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Lectrosonics RX Ã— 2</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">yes</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Place cart stage left</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Coil all cables</td></tr>
+          <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Lectrosonics RX × 2</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">yes</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Place cart stage left</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Coil all cables</td></tr>
           <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Boom pole</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Power on receivers</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Bag all cables</td></tr>
           <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Sound Cart</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">IFB transmitter</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Set levels</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);"></td></tr>
           <tr><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">IFB Kit</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Comtek TX</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">yes</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Place on talent</td><td style="padding:3px 7px;border:1px solid var(--border);color:var(--text-dim);">Collect from talent</td></tr>
@@ -2055,7 +2055,7 @@ function renderSettingsScreen(){
       <div class="settings-row-left">
         <div class="settings-row-title">Created By Matt Ritterpusch</div>
         <a href="https://mattritterpusch.com" target="_blank" style="font-size:13px;color:var(--blue);text-decoration:none;font-weight:500;">MattRitterpusch.com</a>
-        <div class="settings-row-sub">Version 2.0 Â· Data stored locally on this device</div>
+        <div class="settings-row-sub">Version 2.0 · Data stored locally on this device</div>
       </div>
     </div>
   </div>
@@ -2105,7 +2105,7 @@ function toggleSetting(key){
   s[key]=!s[key];saveSettings();renderSettingsScreen();
 }
 
-// â•â•â• INIT â•â•â•
+// ═══ INIT ═══
 loadState();
 applyTextSize();
 applyDarkMode();
@@ -2134,7 +2134,7 @@ window.addEventListener('resize',()=>{
   else if(id==='screenSettings')renderSettingsScreen();
 });
 
-// â•â•â• PWA â•â•â•
+// ═══ PWA ═══
 // Generate apple-touch-icon at runtime (iOS needs PNG, not SVG)
 (function(){
   const c=document.createElement('canvas');c.width=180;c.height=180;
