@@ -140,6 +140,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .lib-item-right{font-size:12px;color:var(--text-muted);}
 .lib-item-body{padding:0 14px 6px;}
 
+.kit-color-picker{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 6px;}
+.kit-color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .12s,border-color .12s;box-sizing:border-box;flex-shrink:0;}
+.kit-color-swatch.sel{border-color:rgba(0,0,0,0.45);transform:scale(1.18);}
+.kit-color-none{background:var(--border2);color:var(--text-muted);font-size:11px;display:flex;align-items:center;justify-content:center;}
 .tpl-kit-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
 .tpl-kit-row{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;}
 .drag-handle{color:var(--border2);font-size:13px;letter-spacing:-1px;flex-shrink:0;touch-action:none;cursor:grab;padding:12px 14px;margin:-12px -6px;}
@@ -583,6 +587,30 @@ const FIREBASE_CONFIG = {
 };
 // Subscription product ID — create this in Google Play Console
 const PLAY_PRODUCT_ID = 'premium_yearly';
+const KIT_COLORS=[
+  {id:'tomato',hex:'#D50000'},{id:'flamingo',hex:'#E67C73'},
+  {id:'tangerine',hex:'#F4511E'},{id:'banana',hex:'#F6BF26'},
+  {id:'sage',hex:'#33B679'},{id:'basil',hex:'#0F9D58'},
+  {id:'peacock',hex:'#039BE5'},{id:'blueberry',hex:'#3F51B5'},
+  {id:'lavender',hex:'#7986CB'},{id:'grape',hex:'#8E24AA'},
+  {id:'graphite',hex:'#616161'},
+];
+function kitColorHex(id){return KIT_COLORS.find(c=>c.id===id)?.hex||null;}
+function catColorHex(cat){
+  if(cat?.color)return kitColorHex(cat.color);
+  if(cat?.globalCatId){const lib=getCat(cat.globalCatId);if(lib?.color)return kitColorHex(lib.color);}
+  return null;
+}
+function colorDot(hex,size=10){return hex?`<span style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${hex};flex-shrink:0;margin-right:5px"></span>`:'';}
+function renderColorPicker(catId,currentColor){
+  const none=`<div class="kit-color-swatch kit-color-none${!currentColor?' sel':''}" onclick="setKitColor('${catId}',null)" title="No color">✕</div>`;
+  return`<div class="kit-color-picker">${none}${KIT_COLORS.map(c=>`<div class="kit-color-swatch${currentColor===c.id?' sel':''}" style="background:${c.hex}" onclick="setKitColor('${catId}','${c.id}')" title="${c.id}"></div>`).join('')}</div>`;
+}
+function setKitColor(catId,colorId){
+  const cat=getCat(catId);if(!cat)return;
+  cat.color=colorId||null;
+  saveState();openLibId=catId;renderLibraryScreen();
+}
 
 let _fb=null,_fbAuth=null,_fbDb=null;
 let syncUser=null,isPremiumUser=false;
@@ -1208,7 +1236,7 @@ function renderKitGrid(){
 <div class="kit-card ${selectedKitIds.has(t.id)?'selected':''}" id="kitcard_${t.id}" onclick="toggleKit('${t.id}')">
   <div class="kit-card-check">${svgCheck(9)}</div>
   <div class="kit-card-name">${escHtml(t.name)}</div>
-  <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?c.title:''}).filter(Boolean).join(' · ')}</div>
+  <div class="kit-card-sub">${(t.categoryIds||[]).map(cid=>{const c=getCat(cid);return c?`${colorDot(kitColorHex(c.color),8)}${escHtml(c.title)}`:''}).filter(Boolean).join(' · ')}</div>
   <span class="kit-drag-handle" onpointerdown="event.stopPropagation();startTplDrag(event,'${t.id}')" onclick="event.stopPropagation()">⋮⋮</span>
 </div>`).join('');
 }
@@ -1385,7 +1413,7 @@ function renderLibTpl(tpl){
 </div>`;
 }
 function renderTplRows(tpl){
-  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);return`<div class="tpl-kit-row" id="tplrow_${tpl.id}_${cid}" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPRenameTplKit(event,'${tpl.id}','${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span><span class="tpl-kit-name" id="tplkitname_${tpl.id}_${cid}">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
+  return(tpl.categoryIds||[]).map((cid,ii)=>{const cat=getCat(cid);const hex=cat?kitColorHex(cat.color):null;return`<div class="tpl-kit-row" id="tplrow_${tpl.id}_${cid}" onpointerdown="if(!event.target.closest('.drag-handle,.row-remove'))startLPRenameTplKit(event,'${tpl.id}','${cid}')" onpointerup="cancelLP()" onpointercancel="cancelLP()"><span class="drag-handle" onpointerdown="event.stopPropagation();startPackRowDrag(event,'${tpl.id}',${ii})">⋮⋮</span>${colorDot(hex,9)}<span class="tpl-kit-name" id="tplkitname_${tpl.id}_${cid}">${escHtml(cat?cat.title:'[deleted]')}</span><span class="tpl-kit-count">${cat?cat.items.length:0} items</span><button class="row-remove" onclick="event.stopPropagation();removeCatFromTpl('${tpl.id}','${cid}')">${svgX(10)}</button></div>`;}).join('');
 }
 
 function renderLibKit(cat){
@@ -1395,10 +1423,12 @@ function renderLibKit(cat){
   return`<div class="lib-item ${open?'open':''}" id="libitem_${cat.id}">
   <div class="lib-item-hdr" onclick="toggleLibItem('${cat.id}')" onpointerdown="startLPKit(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
     <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${cat.id}','kit')">⋮⋮</span>
+    ${colorDot(kitColorHex(cat.color),11)}
     <span class="lib-item-name">${escHtml(cat.title)}</span>
     <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
   ${open?`<div class="lib-item-body">
+    ${renderColorPicker(cat.id,cat.color||null)}
     <div class="kit-routine-tabs">
       <span class="kit-rtab ${rtab==='packing'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','packing')">PACKING <span class="kit-rtab-count">${cat.items.length}</span></span>
       <span class="kit-rtab ${rtab==='setup'?'active':''}" onclick="event.stopPropagation();switchKitRTab('${cat.id}','setup')">SETUP <span class="kit-rtab-count">${(cat.setup||[]).length}</span></span>
@@ -1682,8 +1712,9 @@ function renderCategory(cat,phaseIdx){
   const hasShared=isPacking&&cat.items.some(i=>i.shared);
   const isExp=cat.expanded!==false;
   const done=cat.items.filter(i=>i.checked).length;
+  const _hex=catColorHex(cat);
   return`<div class="category" id="cat_${cat.id}">
-  <div class="category-header ${stCls}" onclick="toggleCatExpand('${cat.id}')">
+  <div class="category-header ${stCls}" onclick="toggleCatExpand('${cat.id}')" style="${_hex?`border-left:3px solid ${_hex};padding-left:10px`:''}">
     ${renderKitCheckEl(cat,phaseIdx)}
     <span class="category-title" ondblclick="event.stopPropagation();startEditCat('${cat.id}')" onpointerdown="event.stopPropagation();lpCatStart(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()" id="cattitle_${cat.id}">${escHtml(cat.title)}</span>
     ${hasShared?`<div class="kit-shared-badge">!</div>`:''}
