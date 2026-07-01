@@ -2052,6 +2052,12 @@ renderDashboard();
 setActiveTab('gigs');
 initFirebase();
 
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&syncUser&&isPremiumUser){
+    loadFromCloud(false);
+  }
+});
+
 // Re-render on breakpoint cross so layout switches correctly
 let _lastWide=isWide();
 window.addEventListener('resize',()=>{
