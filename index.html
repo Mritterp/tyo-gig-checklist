@@ -596,7 +596,7 @@ function initFirebase(){
     _fbAuth=firebase.auth();
     _fbDb=firebase.firestore();
     _fbAuth.onAuthStateChanged(onAuthChanged);
-  }catch(e){showToast('DEBUG: initErr '+e.message);console.warn('Firebase init:',e);}
+  }catch(e){}
 }
 
 async function onAuthChanged(user){
@@ -612,18 +612,15 @@ async function onAuthChanged(user){
 }
 
 async function checkPremiumStatus(uid){
-  if(!_fbDb){console.warn('checkPremium: no _fbDb');return false;}
+  if(!_fbDb)return false;
   try{
-    console.log('checkPremium: reading users/'+uid);
     const doc=await _fbDb.collection('users').doc(uid).get();
-    console.log('checkPremium: doc.exists='+doc.exists, doc.exists?doc.data():'(none)');
     if(!doc.exists)return false;
     const sub=doc.data()?.premium;
-    console.log('checkPremium: premium=',JSON.stringify(sub));
     if(!sub||sub.status!=='active')return false;
     if(sub.expiresAt&&sub.expiresAt.toDate()<new Date())return false;
     return true;
-  }catch(e){console.error('checkPremium error:',e);return false;}
+  }catch(e){return false;}
 }
 
 async function signInWithEmail(isCreate){
@@ -651,7 +648,6 @@ async function signInWithEmail(isCreate){
       'auth/operation-not-allowed':'Email sign-in not enabled in Firebase Console.',
     }[e.code]||e.message||('Error: '+e.code)||'Sign-in failed.';
     showToast(msg);
-    console.error('signInWithEmail:',e);
   }
 }
 
