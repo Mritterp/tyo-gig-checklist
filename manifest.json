@@ -6,7 +6,7 @@
   "id": "/tyo-gig-checklist/",
   "scope": "/tyo-gig-checklist/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#F2F3F5",
   "theme_color": "#1A73E8",
   "icons": [
