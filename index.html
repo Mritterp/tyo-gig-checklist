@@ -655,6 +655,19 @@ async function signInWithEmail(isCreate){
   }
 }
 
+async function sendPasswordReset(){
+  if(!_fbAuth)return;
+  const emailEl=document.getElementById('syncEmailInput');
+  const email=emailEl?emailEl.value.trim():'';
+  if(!email){showToast('Enter your email first.');return;}
+  try{
+    await _fbAuth.sendPasswordResetEmail(email);
+    showToast('Reset email sent — check your inbox.');
+  }catch(e){
+    showToast(e.message||'Could not send reset email.');
+  }
+}
+
 function signOutSync(){
   if(!_fbAuth)return;
   _fbAuth.signOut();
@@ -777,6 +790,7 @@ function renderSyncModal(step){
 </div>
 <button class="sync-modal-cta" onclick="signInWithEmail(false)">Sign in</button>
 <button class="sync-modal-cta" onclick="signInWithEmail(true)" style="background:var(--bg2);color:var(--blue);border:1.5px solid var(--blue);margin-top:6px">Create account</button>
+<button class="sync-modal-skip" onclick="sendPasswordReset()" style="font-size:13px;color:var(--text2)">Forgot password?</button>
 <button class="sync-modal-skip" onclick="closeSyncModal()">Not now</button>`;
   }else if(step==='premium'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
