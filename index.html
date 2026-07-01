@@ -596,20 +596,23 @@ function initFirebase(){
     _fbAuth=firebase.auth();
     _fbDb=firebase.firestore();
     _fbAuth.onAuthStateChanged(onAuthChanged);
-    // Handle redirect result (used instead of popup on mobile/GitHub Pages)
     _fbAuth.getRedirectResult().then(result=>{
       if(result&&result.user){
+        showToast('DEBUG: redirect got user '+result.user.email);
         const user=result.user;
         checkPremiumStatus(user.uid).then(premium=>{
           isPremiumUser=premium;
           renderSyncModal(premium?'active':'premium');
         });
+      }else{
+        showToast('DEBUG: getRedirectResult = no user');
       }
-    }).catch(e=>console.warn('getRedirectResult:',e));
-  }catch(e){console.warn('Firebase init:',e);}
+    }).catch(e=>{showToast('DEBUG: redirectErr '+e.code);console.warn('getRedirectResult:',e);});
+  }catch(e){showToast('DEBUG: initErr '+e.message);console.warn('Firebase init:',e);}
 }
 
 async function onAuthChanged(user){
+  showToast('DEBUG: authChanged '+(user?user.email:'null'));
   syncUser=user;
   if(user){
     isPremiumUser=await checkPremiumStatus(user.uid);
