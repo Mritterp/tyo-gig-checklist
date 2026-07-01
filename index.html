@@ -603,7 +603,7 @@ async function onAuthChanged(user){
   syncUser=user;
   if(user){
     isPremiumUser=await checkPremiumStatus(user.uid);
-    if(isPremiumUser)loadFromCloud();
+    if(isPremiumUser)loadFromCloud(true);
   }else{
     isPremiumUser=false;
   }
@@ -682,7 +682,7 @@ async function syncToCloud(){
   }catch(e){console.warn('Sync failed:',e);}
 }
 
-async function loadFromCloud(){
+async function loadFromCloud(forceCloud=false){
   if(!syncUser||!isPremiumUser||!_fbDb)return;
   try{
     const doc=await _fbDb.collection('users').doc(syncUser.uid).get();
@@ -691,7 +691,7 @@ async function loadFromCloud(){
     if(!remote?.appData){syncToCloud();return;}
     const remoteTs=remote.updatedAt?.toMillis?.()??0;
     const localTs=appState._updatedAt||0;
-    if(remoteTs>localTs){
+    if(forceCloud||remoteTs>localTs){
       appState={...remote.appData,_updatedAt:remoteTs};
       localStorage.setItem('tyo_v5',JSON.stringify(appState));
       renderDashboard();
@@ -699,7 +699,7 @@ async function loadFromCloud(){
     }else{
       syncToCloud();
     }
-  }catch(e){console.warn('Load from cloud:',e);}
+  }catch(e){}
 }
 
 async function subscribeToPremium(){
