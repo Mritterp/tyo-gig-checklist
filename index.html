@@ -1433,8 +1433,8 @@ function renderLibKit(cat){
   return`<div class="lib-item ${open?'open':''}" id="libitem_${cat.id}">
   <div class="lib-item-hdr" onclick="toggleLibItem('${cat.id}')" onpointerdown="startLPKit(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
     <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${cat.id}','kit')">⋮⋮</span>
-    <span style="width:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${cat.color?colorDot(kitColorHex(cat.color),11):''}</span>
-    <span class="lib-item-name">${escHtml(cat.title)}</span>
+    ${cat.color?colorDot(kitColorHex(cat.color),10):''}
+    <span class="lib-item-name" style="flex:1">${escHtml(cat.title)}</span>
     <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
   ${open?`<div class="lib-item-body">
