@@ -157,7 +157,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sa
 .tpl-add-btn{padding:9px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;}
 .kit-lib-dropdown{position:relative;flex:1;}
 .kit-lib-dd-btn{width:100%;background:var(--surface);border:1px dashed var(--green-border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text-dim);font-family:'Inter',sans-serif;cursor:pointer;text-align:left;}
-.kit-lib-dd-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--green-border);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:200;max-height:220px;overflow-y:auto;}
+.kit-lib-dd-panel{display:none;position:fixed;background:var(--surface);border:1.5px solid var(--green-border);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:9999;max-height:220px;overflow-y:auto;}
 .kit-lib-dd-panel.open{display:block;}
 .kit-lib-dd-item{display:flex;align-items:center;gap:8px;padding:9px 13px;cursor:pointer;font-size:13px;color:var(--text);}
 .kit-lib-dd-item:hover{background:var(--bg2);}
@@ -1433,7 +1433,7 @@ function renderLibKit(cat){
   return`<div class="lib-item ${open?'open':''}" id="libitem_${cat.id}">
   <div class="lib-item-hdr" onclick="toggleLibItem('${cat.id}')" onpointerdown="startLPKit(event,'${cat.id}')" onpointerup="cancelLP()" onpointercancel="cancelLP()" onpointerleave="cancelLP()">
     <span class="drag-handle lib-drag-handle" onpointerdown="event.stopPropagation();cancelLP();startLibDrag(event,'${cat.id}','kit')">⋮⋮</span>
-    ${colorDot(kitColorHex(cat.color),11)}
+    <span style="width:16px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${cat.color?colorDot(kitColorHex(cat.color),11):''}</span>
     <span class="lib-item-name">${escHtml(cat.title)}</span>
     <span class="lib-item-right">${open?'long-press to rename':totalItems+'  ›'}</span>
   </div>
@@ -1534,6 +1534,11 @@ let _openKitDd=null;
 function toggleKitDropdown(tplId){
   if(_openKitDd&&_openKitDd!==tplId){document.getElementById('kitddpanel_'+_openKitDd)?.classList.remove('open');}
   const panel=document.getElementById('kitddpanel_'+tplId);if(!panel)return;
+  const btn=panel.previousElementSibling;
+  const rect=btn.getBoundingClientRect();
+  panel.style.top=(rect.bottom+4)+'px';
+  panel.style.left=rect.left+'px';
+  panel.style.width=rect.width+'px';
   const opening=!panel.classList.contains('open');
   panel.classList.toggle('open',opening);
   _openKitDd=opening?tplId:null;
