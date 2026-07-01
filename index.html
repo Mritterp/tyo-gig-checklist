@@ -597,11 +597,12 @@ const FIREBASE_CONFIG = {
 // Subscription product ID — create this in Google Play Console
 const PLAY_PRODUCT_ID = 'premium_yearly';
 const KIT_COLORS=[
-  {id:'tomato',hex:'#D50000'},{id:'flamingo',hex:'#E67C73'},
-  {id:'tangerine',hex:'#F4511E'},{id:'banana',hex:'#F6BF26'},
-  {id:'sage',hex:'#33B679'},{id:'basil',hex:'#0F9D58'},
-  {id:'peacock',hex:'#039BE5'},{id:'blueberry',hex:'#3F51B5'},
-  {id:'lavender',hex:'#7986CB'},{id:'grape',hex:'#8E24AA'},
+  {id:'tomato',hex:'#D50000'},
+  {id:'banana',hex:'#F6BF26'},
+  {id:'sage',hex:'#33B679'},
+  {id:'peacock',hex:'#039BE5'},
+  {id:'blueberry',hex:'#3F51B5'},
+  {id:'grape',hex:'#8E24AA'},
   {id:'graphite',hex:'#616161'},
 ];
 function kitColorHex(id){return KIT_COLORS.find(c=>c.id===id)?.hex||null;}
