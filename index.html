@@ -818,7 +818,7 @@ function renderSyncModal(step){
 <div class="sync-modal-title">Sync Across Devices</div>
 <div class="sync-modal-sub">Keep your Production Checklists up to date on every device — automatically.</div>
 <div class="sync-modal-features">
-  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💰</div><div class="sync-modal-feature-text"><strong>Why $1/year?</strong> Syncing requires servers running 24/7. This subscription covers those infrastructure costs.</div></div>
+  <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💰</div><div class="sync-modal-feature-text"><strong>Why $20/year?</strong> Syncing requires servers running 24/7. This subscription covers those infrastructure costs.</div></div>
   <div class="sync-modal-feature"><div class="sync-modal-feature-icon">📱</div><div class="sync-modal-feature-text">Synced data is tied to your account so changes appear across your phone, tablet, or desktop.</div></div>
 </div>
 <div style="display:flex;flex-direction:column;gap:10px;margin:16px 0 4px">
@@ -840,7 +840,7 @@ function renderSyncModal(step){
 </div>
 <div class="sync-modal-title">Unlock Premium Sync</div>
 <div class="sync-modal-price">
-  <strong>$1 / year</strong>
+  <strong>$20 / year</strong>
   Cross-device sync backed by cloud servers.<br>
   Your local data always stays on your device — no lock-in.
 </div>
@@ -848,7 +848,7 @@ function renderSyncModal(step){
   <div class="sync-modal-feature"><div class="sync-modal-feature-icon">☁️</div><div class="sync-modal-feature-text">Gigs and checklists sync across all signed-in devices</div></div>
   <div class="sync-modal-feature"><div class="sync-modal-feature-icon">💾</div><div class="sync-modal-feature-text">Cloud backup — restore everything if you lose your phone</div></div>
 </div>
-<button class="sync-modal-cta" onclick="subscribeToPremium()">Subscribe — $1 / year</button>
+<button class="sync-modal-cta" onclick="subscribeToPremium()">Subscribe — $20 / year</button>
 <button class="sync-modal-skip" onclick="signOutSync()" style="color:var(--danger);font-size:13px">Sign out</button>`;
   }else if(step==='active'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
@@ -867,7 +867,7 @@ function renderSyncModal(step){
     m.innerHTML=`<div class="sync-modal-handle"></div>
 <div class="sync-modal-icon">📱</div>
 <div class="sync-modal-title">Subscribe in the Android App</div>
-<div class="sync-modal-sub">To subscribe, open Production Checklist on Android, go to Settings → Sync, and tap Subscribe. Google Play handles the $1/year payment securely.<br><br>Once subscribed, sync works on all devices including the web.</div>
+<div class="sync-modal-sub">To subscribe, open Production Checklist on Android, go to Settings → Sync, and tap Subscribe. Google Play handles the $20/year payment securely.<br><br>Once subscribed, sync works on all devices including the web.</div>
 <button class="sync-modal-cta" onclick="closeSyncModal()">Got it</button>`;
   }
 }
@@ -1903,7 +1903,7 @@ function renderSettingsScreen(){
   const permWarning=notifStatus==='denied'?'<p class="settings-note" style="color:var(--danger)">⚠ Notifications are blocked by your device. Enable them to receive alerts.</p>':notifStatus==='default'?'<p class="settings-note">Tap a toggle to grant notification permission when prompted.</p>':'';
   const syncBtnLabel=syncUser&&isPremiumUser?'✓ Active':syncUser?'Upgrade':'Set up';
   const syncBtnColor=syncUser&&isPremiumUser?'var(--green)':'var(--blue)';
-  const syncSubText=syncUser&&isPremiumUser?'Syncing automatically':syncUser?'Subscribe to activate sync':'$1/year subscription to sync across multiple devices';
+  const syncSubText=syncUser&&isPremiumUser?'Syncing automatically':syncUser?'Subscribe to activate sync':'$20/year subscription to sync across multiple devices';
   const syncModalTarget=syncUser&&isPremiumUser?'active':syncUser?'premium':'signin';
   const initials=(syncUser?.displayName||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
   const photoHtml=syncUser?.photoURL?`<img src="${escHtml(syncUser.photoURL)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:11px;font-weight:600;color:var(--blue)">${initials}</span>`;
