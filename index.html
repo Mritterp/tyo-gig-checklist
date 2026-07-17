@@ -1579,7 +1579,17 @@ function saveCatAndPropagate(catId){
   const aff=appState.gigs.filter(g=>g.phases?.[0]?.categories?.some(c=>c.globalCatId===catId));
   if(!aff.length){showToast('Kit saved');return;}
   appConfirm(`Update "${cat.title}" in ${aff.length} existing gig${aff.length>1?'s':''}? Checked items will be reset.`,()=>{
-    aff.forEach(g=>{const pc=g.phases[0].categories.find(c=>c.globalCatId===catId);if(pc){pc.title=cat.title;pc.items=cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?/^lav mics/i.test(item):!!item.shared}));}});
+    aff.forEach(g=>{
+    // Update packing phase
+    const pc=g.phases[0].categories.find(c=>c.globalCatId===catId);
+    if(pc){pc.title=cat.title;pc.items=cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?/^lav mics/i.test(item):!!item.shared}));}
+    // Update setup phase
+    const sc=g.phases[1]?.categories.find(c=>c.globalCatId===catId);
+    if(sc){sc.title=cat.title;sc.items=(cat.setup||[]).map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}));}
+    // Update wrap phase
+    const wc=g.phases[2]?.categories.find(c=>c.globalCatId===catId);
+    if(wc){wc.title=cat.title;wc.items=(cat.teardown||[]).map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}));}
+  });
     saveState();showToast(`Updated ${aff.length} gig${aff.length>1?'s':''}`);
   },'Update');
 }
