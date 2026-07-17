@@ -861,7 +861,8 @@ function renderSyncModal(step){
 </div>
 <div class="sync-modal-title">Sync is Active</div>
 <div class="sync-modal-sub">Your gig data syncs automatically across all signed-in devices. Changes save within seconds of any edit.</div>
-<button class="sync-modal-cta" onclick="syncToCloud().then(()=>{showToast('Synced! ✔');closeSyncModal();})">Sync Now</button>
+<button class="sync-modal-cta" onclick="syncToCloud().then(()=>{showToast('Synced! ✔');closeSyncModal();})">Push to Cloud</button>
+<button class="sync-modal-cta" onclick="loadFromCloud(true).then(()=>closeSyncModal())" style="background:var(--bg2);color:var(--blue);border:1.5px solid var(--blue)">Pull from Cloud</button>
 <button class="sync-modal-skip" onclick="signOutSync()" style="color:var(--danger);font-size:13px">Sign out of sync</button>`;
   }else if(step==='web-sub'){
     m.innerHTML=`<div class="sync-modal-handle"></div>
