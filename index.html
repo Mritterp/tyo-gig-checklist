@@ -1609,16 +1609,33 @@ function saveCatAndPropagate(catId){
   if(!aff.length){showToast('Kit saved');return;}
   appConfirm(`Update "${cat.title}" in ${aff.length} existing gig${aff.length>1?'s':''}? Checked items will be reset.`,()=>{
     aff.forEach(g=>{
-    // Update packing phase
-    const pc=g.phases[0].categories.find(c=>c.globalCatId===catId);
-    if(pc){pc.title=cat.title;pc.items=cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?/^lav mics/i.test(item):!!item.shared}));}
-    // Update setup phase
-    const sc=g.phases[1]?.categories.find(c=>c.globalCatId===catId);
-    if(sc){sc.title=cat.title;sc.items=(cat.setup||[]).map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}));}
-    // Update wrap phase
-    const wc=g.phases[2]?.categories.find(c=>c.globalCatId===catId);
-    if(wc){wc.title=cat.title;wc.items=(cat.teardown||[]).map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}));}
-  });
+      // Update packing phase
+      const pc=g.phases[0].categories.find(c=>c.globalCatId===catId);
+      if(pc){pc.title=cat.title;pc.items=cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?/^lav mics/i.test(item):!!item.shared}));}
+      // Update or insert setup phase
+      if(g.phases[1]){
+        const sc=g.phases[1].categories.find(c=>c.globalCatId===catId);
+        const setupItems=(cat.setup||[]).map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}));
+        if(sc){sc.title=cat.title;sc.items=setupItems;}
+        else if(setupItems.length){
+          // Insert in same order as packing phase
+          const packIdx=g.phases[0].categories.findIndex(c=>c.globalCatId===catId);
+          const insertAt=g.phases[1].categories.filter(c=>g.phases[0].categories.findIndex(p=>p.globalCatId===c.globalCatId)<packIdx).length;
+          g.phases[1].categories.splice(insertAt,0,{id:uid(),title:cat.title,globalCatId:catId,items:setupItems});
+        }
+      }
+      // Update or insert wrap phase
+      if(g.phases[2]){
+        const wc=g.phases[2].categories.find(c=>c.globalCatId===catId);
+        const wrapItems=(cat.teardown||[]).map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}));
+        if(wc){wc.title=cat.title;wc.items=wrapItems;}
+        else if(wrapItems.length){
+          const packIdx=g.phases[0].categories.findIndex(c=>c.globalCatId===catId);
+          const insertAt=g.phases[2].categories.filter(c=>g.phases[0].categories.findIndex(p=>p.globalCatId===c.globalCatId)<packIdx).length;
+          g.phases[2].categories.splice(insertAt,0,{id:uid(),title:cat.title,globalCatId:catId,items:wrapItems});
+        }
+      }
+    });
     saveState();showToast(`Updated ${aff.length} gig${aff.length>1?'s':''}`);
   },'Update');
 }
