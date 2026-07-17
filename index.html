@@ -964,7 +964,7 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 let _feedbackType='bug';
 function openFeedbackModal(type){
   _feedbackType=type;
-  document.getElementById('feedbackModalTitle').textContent=type==='bug'?'🐛 Report a Bug':'💡 Suggest a Feature';
+  document.getElementById('feedbackModalTitle').textContent='💡 Report a Bug or Suggest a Feature';
   document.getElementById('feedbackText').value='';
   const m=document.getElementById('feedbackModal');
   m.style.display='flex';
@@ -2098,9 +2098,8 @@ function renderSettingsScreen(){
         <div class="settings-row-sub">Version 2.0 · Data stored locally on this device</div>
       </div>
     </div>
-    <div class="settings-row" style="border-top:1px solid var(--border1);margin-top:4px;padding-top:12px;gap:8px;flex-direction:column;align-items:stretch;">
-      <button class="settings-btn" onclick="openFeedbackModal('bug')" style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;text-align:left;">🐛 Report a Bug</button>
-      <button class="settings-btn" onclick="openFeedbackModal('feature')" style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;text-align:left;">💡 Suggest a Feature</button>
+    <div class="settings-row" style="border-top:1px solid var(--border1);margin-top:4px;padding-top:12px;">
+      <button class="settings-btn" onclick="openFeedbackModal('general')" style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;text-align:left;width:100%;">💡 Report a Bug or Suggest a Feature</button>
     </div>
   </div>
 </div>
