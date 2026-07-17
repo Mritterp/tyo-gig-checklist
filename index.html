@@ -952,6 +952,26 @@ function saveState(){
 }
 function uid(){return'x'+Math.random().toString(36).slice(2,10);}
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+let _feedbackType='bug';
+function openFeedbackModal(type){
+  _feedbackType=type;
+  document.getElementById('feedbackModalTitle').textContent=type==='bug'?'🐛 Report a Bug':'💡 Suggest a Feature';
+  document.getElementById('feedbackText').value='';
+  const m=document.getElementById('feedbackModal');
+  m.style.display='flex';
+}
+function closeFeedbackModal(){
+  document.getElementById('feedbackModal').style.display='none';
+}
+function submitFeedback(){
+  const text=document.getElementById('feedbackText').value.trim();
+  if(!text){showToast('Please enter a message.');return;}
+  const subject=encodeURIComponent(_feedbackType==='bug'?'Production Checklist — Bug Report':'Production Checklist — Feature Request');
+  const body=encodeURIComponent(text);
+  window.open(`mailto:mritterp@gmail.com?subject=${subject}&body=${body}`,'_blank');
+  closeFeedbackModal();
+  showToast('Opening email…');
+}
 function showToast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200);}
 function svgCheck(sz=10){return`<svg width="${sz}" height="${sz}" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
 function svgX(sz=11){return`<svg width="${sz}" height="${sz}" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;}
@@ -2069,6 +2089,20 @@ function renderSettingsScreen(){
         <div class="settings-row-sub">Version 2.0 · Data stored locally on this device</div>
       </div>
     </div>
+    <div class="settings-row" style="border-top:1px solid var(--border1);margin-top:4px;padding-top:12px;gap:8px;flex-direction:column;align-items:stretch;">
+      <button class="settings-btn" onclick="openFeedbackModal('bug')" style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;text-align:left;">🐛 Report a Bug</button>
+      <button class="settings-btn" onclick="openFeedbackModal('feature')" style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;text-align:left;">💡 Suggest a Feature</button>
+    </div>
+  </div>
+</div>
+
+<div id="feedbackModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeFeedbackModal()">
+  <div style="background:var(--bg1);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;box-sizing:border-box;">
+    <div id="feedbackModalTitle" style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text1)"></div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">Your message will be sent to Matt.</div>
+    <textarea id="feedbackText" placeholder="Describe the issue or idea..." style="width:100%;box-sizing:border-box;min-height:120px;border-radius:10px;border:2px solid var(--border2);background:var(--bg2);color:var(--text1);font-size:14px;padding:10px;font-family:'Inter',sans-serif;resize:vertical;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+    <button onclick="submitFeedback()" style="width:100%;margin-top:10px;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">Send</button>
+    <button onclick="closeFeedbackModal()" style="width:100%;margin-top:8px;padding:10px;background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;">Cancel</button>
   </div>
 </div>`;
   if(_importPanelOpen) setTimeout(()=>{
