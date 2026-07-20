@@ -1947,7 +1947,7 @@ function openAddFromLibrary(){
   if(!available.length){showToast('All library kits already in this gig.');return;}
   const items=available.map(c=>{const hex=catColorHex(c);const dot=hex?`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${hex};margin-right:8px;flex-shrink:0"></span>`:'<span style="display:inline-block;width:10px;margin-right:8px;"></span>';return`<div onclick="addCatFromLibraryToGig('${c.id}')" style="padding:12px 16px;display:flex;align-items:center;cursor:pointer;border-bottom:1px solid var(--border1);font-size:15px;color:var(--text1);">${dot}${escHtml(c.title)}</div>`;}).join('');
   document.getElementById('addFromLibModal').innerHTML=`
-    <div style="background:var(--bg1);border-radius:20px 20px 0 0;padding:0;width:100%;max-width:480px;box-sizing:border-box;max-height:70vh;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
+    <div style="background:#ffffff;border-radius:20px 20px 0 0;padding:0;width:100%;max-width:480px;box-sizing:border-box;max-height:70vh;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
       <div style="padding:16px 16px 12px;font-size:17px;font-weight:700;color:var(--text1);border-bottom:1px solid var(--border1);">Add Kit from Library</div>
       <div style="overflow-y:auto;flex:1;">${items}</div>
       <div style="padding:12px 16px;"><button onclick="closeAddFromLibModal()" style="width:100%;padding:12px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;font-size:15px;font-weight:600;color:var(--text1);cursor:pointer;">Cancel</button></div>
