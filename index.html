@@ -467,6 +467,7 @@ body.text-xlarge .settings-row-sub{font-size:17px;}
 <body>
 <div class="complete-flash" id="completeFlash"></div>
 <div class="toast" id="toast"></div>
+<div id="addFromLibModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:flex-end;justify-content:center;" onclick="closeAddFromLibModal()"></div>
 <div id="feedbackModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeFeedbackModal()">
   <div style="background:#ffffff;border-radius:20px;padding:24px;width:90%;max-width:420px;box-sizing:border-box;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
     <div id="feedbackModalTitle" style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text1)"></div>
@@ -1914,7 +1915,10 @@ function renderPhaseContent(){
   let html=`<div class="phase-header"><div class="phase-stats ${pct===100?'complete':''}"><em>${done}</em> / ${total} items</div><div class="phase-actions"><button class="sm-btn" onclick="resetPhase()">Reset</button><button class="sm-btn green" onclick="checkAllPhase()">Check All</button></div></div>`;
   if(activePhaseIdx===2)html+=`<div class="teardown-lead">Everything that went out comes back. Wrap it up. Confirm each kit before you leave.</div>`;
   phase.categories.forEach(cat=>{html+=renderCategory(cat,activePhaseIdx);});
-  html+=`<button class="add-cat-btn" onclick="addCategory()">${svgPlus(10)} Add Kit</button>`;
+  html+=`<div style="display:flex;gap:8px;margin:8px 0;">
+    <button class="add-cat-btn" style="flex:1" onclick="openAddFromLibrary()">${svgPlus(10)} Add Kit</button>
+    <button class="add-cat-btn" style="flex:1" onclick="addCategory()">${svgPlus(10)} Add Custom</button>
+  </div>`;
   if(activePhaseIdx===0)html+=`<div class="cl-hint">Tap row to expand · tap ○ to pack whole kit · long-press item to edit</div>`;
   clMain.innerHTML=html;
 }
@@ -1936,6 +1940,32 @@ function startEditCat(catId){const cat=findCat(catId);if(!cat)return;const span=
 function addItem(catId){if(editingItem)commitEditItem();const cat=findCat(catId);if(!cat)return;const ni={id:uid(),text:'New item',checked:false,note:'',shared:false};cat.items.push(ni);saveState();renderPhaseContent();setTimeout(()=>startEditItem(ni.id),40);}
 function deleteItem(id){const f=findItem(id);if(!f)return;appConfirm(`Delete "${f.item.text}"?`,()=>{f.cat.items=f.cat.items.filter(i=>i.id!==id);saveState();renderPhaseContent();});}
 function deleteCategory(catId){const gig=getActiveGig();if(!gig)return;const cat=findCat(catId);if(!cat)return;appConfirm(`Delete kit "${cat.title}" and all its items?`,()=>{gig.phases.forEach(p=>{p.categories=p.categories.filter(c=>c.id!==catId);});saveState();renderPhaseContent();});}
+function openAddFromLibrary(){
+  const gig=getActiveGig();if(!gig)return;
+  const existingIds=gig.phases[0].categories.map(c=>c.globalCatId).filter(Boolean);
+  const available=(appState.categories||[]).filter(c=>!existingIds.includes(c.id));
+  if(!available.length){showToast('All library kits already in this gig.');return;}
+  const items=available.map(c=>{const hex=catColorHex(c);const dot=hex?`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${hex};margin-right:8px;flex-shrink:0"></span>`:'<span style="display:inline-block;width:10px;margin-right:8px;"></span>';return`<div onclick="addCatFromLibraryToGig('${c.id}')" style="padding:12px 16px;display:flex;align-items:center;cursor:pointer;border-bottom:1px solid var(--border1);font-size:15px;color:var(--text1);">${dot}${escHtml(c.title)}</div>`;}).join('');
+  document.getElementById('addFromLibModal').innerHTML=`
+    <div style="background:var(--bg1);border-radius:20px 20px 0 0;padding:0;width:100%;max-width:480px;box-sizing:border-box;max-height:70vh;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
+      <div style="padding:16px 16px 12px;font-size:17px;font-weight:700;color:var(--text1);border-bottom:1px solid var(--border1);">Add Kit from Library</div>
+      <div style="overflow-y:auto;flex:1;">${items}</div>
+      <div style="padding:12px 16px;"><button onclick="closeAddFromLibModal()" style="width:100%;padding:12px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:10px;font-size:15px;font-weight:600;color:var(--text1);cursor:pointer;">Cancel</button></div>
+    </div>`;
+  document.getElementById('addFromLibModal').style.display='flex';
+}
+function closeAddFromLibModal(){document.getElementById('addFromLibModal').style.display='none';}
+function addCatFromLibraryToGig(catId){
+  const gig=getActiveGig();const cat=getCat(catId);if(!gig||!cat)return;
+  // Add to packing phase
+  const packCat={id:uid(),title:cat.title,globalCatId:catId,items:cat.items.map(item=>({id:uid(),text:typeof item==='string'?item:item.text,checked:false,note:'',shared:typeof item==='string'?false:!!item.shared})),expanded:true};
+  gig.phases[0].categories.push(packCat);
+  // Add setup if exists
+  if(gig.phases[1]&&(cat.setup||[]).length){gig.phases[1].categories.push({id:uid(),title:cat.title,globalCatId:catId,items:cat.setup.map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}))});}
+  // Add wrap if exists
+  if(gig.phases[2]&&(cat.teardown||[]).length){gig.phases[2].categories.push({id:uid(),title:cat.title,globalCatId:catId,items:cat.teardown.map(s=>({id:uid(),text:typeof s==='string'?s:s.text,checked:false,note:'',shared:false}))});}
+  saveState();closeAddFromLibModal();renderPhaseContent();showToast(`Added "${cat.title}"`);
+}
 function addCategory(phaseIdx){const gig=getActiveGig();const pi=phaseIdx!==undefined?phaseIdx:activePhaseIdx;const phase=gig.phases[pi];const nc={id:uid(),title:'New Kit',items:[{id:uid(),text:'First item',checked:false,note:'',shared:false}],expanded:true};phase.categories.push(nc);saveState();renderPhaseContent();setTimeout(()=>startEditCat(nc.id),40);}
 function resetPhase(pi){appConfirm('Uncheck all items in this phase?',()=>{const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=false));saveState();renderPhaseContent();},'Reset');}
 function checkAllPhase(pi){const gig=getActiveGig();const idx=pi!=null?pi:activePhaseIdx;gig.phases[idx].categories.forEach(c=>c.items.forEach(i=>i.checked=true));saveState();renderPhaseContent();}
