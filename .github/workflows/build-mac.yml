@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'GitHub Release tag to attach the .dmg to (e.g. v1.0.2)'
+        description: 'GitHub Release tag to attach the .dmg to (e.g. v1.0.3)'
         required: true
 
 jobs:
@@ -32,6 +32,14 @@ jobs:
 
       - name: Build Mac .dmg
         working-directory: desktop-electron
+        run: npx electron-builder --mac --publish never
+
+      - name: Upload .dmg to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx electron-builder --mac --publish always
+        run: |
+          gh release upload ${{ github.event.inputs.release_tag }} \
+            desktop-electron/dist/*.dmg \
+            desktop-electron/dist/*.dmg.blockmap \
+            desktop-electron/dist/latest-mac.yml \
+            --clobber
