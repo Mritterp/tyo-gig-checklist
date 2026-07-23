@@ -1,0 +1,37 @@
+name: Build Mac Installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'GitHub Release tag to attach the .dmg to (e.g. v1.0.2)'
+        required: true
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Copy app files into Electron project
+        run: |
+          mkdir -p desktop-electron/app
+          cp index.html desktop-electron/app/index.html
+          cp manifest.json desktop-electron/app/manifest.json
+
+      - name: Install dependencies
+        working-directory: desktop-electron
+        run: npm install
+
+      - name: Build Mac .dmg
+        working-directory: desktop-electron
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx electron-builder --mac --publish always
